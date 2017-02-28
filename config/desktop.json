@@ -65,6 +65,7 @@
 		"post-editor/author-selector": true,
 		"post-editor/image-editor": true,
 		"post-editor/mentions": false,
+		"post-editor/video-editor": false,
 		"press-this": false,
 		"preview-layout": true,
 		"reader": true,
