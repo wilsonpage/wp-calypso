@@ -22,6 +22,7 @@ import {
 	isJetpackModuleUnavailableInDevelopmentMode,
 	isJetpackSiteInDevelopmentMode
 } from 'state/selectors';
+import SpamFilteringSettings from './spam-filtering-settings';
 
 class SiteSettingsFormSecurity extends Component {
 	renderSectionHeader( title, showButton = true, disableButton = false ) {
@@ -78,6 +79,15 @@ class SiteSettingsFormSecurity extends Component {
 					isRequestingSettings={ isRequestingSettings }
 					onChangeField={ onChangeField }
 					setFieldValue={ setFieldValue }
+				/>
+
+				{ this.renderSectionHeader( translate( 'Spam filtering' ), true ) }
+				<SpamFilteringSettings
+					handleAutosavingToggle={ handleAutosavingToggle }
+					isSavingSettings={ isSavingSettings }
+					isRequestingSettings={ isRequestingSettings }
+					onChangeField={ onChangeField }
+					fields={ fields }
 				/>
 
 				{ this.renderSectionHeader( translate( 'WordPress.com sign in' ), false ) }
