@@ -21,7 +21,6 @@ var React = require( 'react' ),
 /**
  * Internal dependencies
  */
-// lib/local-storage must be run before lib/user
 var config = require( 'config' ),
 	abtestModule = require( 'lib/abtest' ),
 	getSavedVariations = abtestModule.getSavedVariations,
