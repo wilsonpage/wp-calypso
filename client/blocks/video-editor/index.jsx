@@ -11,7 +11,7 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import Spinner from 'components/spinner';
+import ProgressBar from 'components/progress-bar';
 import Notice from 'components/notice';
 import DetailPreviewVideo from 'post-editor/media-modal/detail/detail-preview-video';
 import VideoEditorButtons from './video-editor-buttons';
@@ -21,9 +21,9 @@ import {
 	updateVideoEditorPoster,
 } from 'state/ui/editor/video-editor/actions';
 import {
+	getPosterUploadProgress,
 	getVideoEditorPoster,
 	isVideoEditorPosterUpdated,
-	isVideoEditorPosterUpdating,
 	videoEditorHasPosterUpdateError,
 } from 'state/ui/editor/video-editor/selectors';
 
@@ -42,8 +42,8 @@ class VideoEditor extends Component {
 		// Connected props
 		hasPosterUpdateError: PropTypes.bool,
 		isPosterUpdated: PropTypes.bool,
-		isPosterUpdating: PropTypes.bool,
 		poster: PropTypes.string,
+		uploadProgress: PropTypes.number,
 	};
 
 	static defaultProps = {
@@ -164,9 +164,9 @@ class VideoEditor extends Component {
 	render() {
 		const {
 			className,
-			isPosterUpdating,
 			media,
 			onCancel,
+			uploadProgress,
 			translate,
 		} = this.props;
 		const {
@@ -195,13 +195,18 @@ class VideoEditor extends Component {
 								onScriptLoadError={ this.handleScriptLoadError }
 								onVideoLoaded={ this.handleVideoLoaded }
 							/>
-							{ isPosterUpdating && <Spinner /> }
 						</div>
+						{ uploadProgress && ! isSelectingFrame &&
+							<ProgressBar
+								isPulsing={ true }
+								total={ 100 }
+								value={ uploadProgress } />
+						}
 						<span className="video-editor__text">
 							{ translate( 'Select a frame to use as the thumbnail image or upload your own.' ) }
 						</span>
 						<VideoEditorButtons
-							isPosterUpdating={ isPosterUpdating }
+							isPosterUpdating={ !! uploadProgress }
 							isVideoLoading={ isLoading }
 							onCancel={ onCancel }
 							onSelectFrame={ this.handleSelectFrame }
@@ -220,8 +225,8 @@ export default connect(
 		return {
 			hasPosterUpdateError: videoEditorHasPosterUpdateError( state ),
 			isPosterUpdated: isVideoEditorPosterUpdated( state ),
-			isPosterUpdating: isVideoEditorPosterUpdating( state ),
 			poster: getVideoEditorPoster( state ),
+			uploadProgress: getPosterUploadProgress( state ),
 		};
 	},
 	dispatch => bindActionCreators( {
