@@ -53,6 +53,7 @@ class SiteSettingsFormSecurity extends Component {
 			onChangeField,
 			protectModuleActive,
 			protectModuleUnavailable,
+			akismetUnavailable,
 			setFieldValue,
 			siteId,
 			translate
@@ -63,6 +64,7 @@ class SiteSettingsFormSecurity extends Component {
 		}
 
 		const disableProtect = ! protectModuleActive || protectModuleUnavailable;
+		const disableSpamFiltering = ! protectModuleActive || akismetUnavailable;
 
 		return (
 			<form
@@ -81,13 +83,13 @@ class SiteSettingsFormSecurity extends Component {
 					setFieldValue={ setFieldValue }
 				/>
 
-				{ this.renderSectionHeader( translate( 'Spam filtering' ), true ) }
+				{ this.renderSectionHeader( translate( 'Spam filtering' ), true, disableSpamFiltering ) }
 				<SpamFilteringSettings
+					fields={ fields }
 					handleAutosavingToggle={ handleAutosavingToggle }
 					isSavingSettings={ isSavingSettings }
 					isRequestingSettings={ isRequestingSettings }
 					onChangeField={ onChangeField }
-					fields={ fields }
 				/>
 
 				{ this.renderSectionHeader( translate( 'WordPress.com sign in' ), false ) }
@@ -106,24 +108,30 @@ const connectComponent = connect(
 	( state ) => {
 		const siteId = getSelectedSiteId( state );
 		const protectModuleActive = !! isJetpackModuleActive( state, siteId, 'protect' );
+		const akismetActive = !! isJetpackModuleActive( state, siteId, 'akismet' );
 		const siteInDevMode = isJetpackSiteInDevelopmentMode( state, siteId );
-		const moduleUnavailableInDevMode = isJetpackModuleUnavailableInDevelopmentMode( state, siteId, 'protect' );
+		const protectIsUnavailableInDevMode = isJetpackModuleUnavailableInDevelopmentMode( state, siteId, 'protect' );
+		const akismetIsUnavailableInDevMode = isJetpackModuleUnavailableInDevelopmentMode( state, siteId, 'akismet' );
 		const jetpackSettingsUiSupported = siteSupportsJetpackSettingsUi( state, siteId );
 
 		return {
 			jetpackSettingsUiSupported,
 			protectModuleActive,
-			protectModuleUnavailable: siteInDevMode && moduleUnavailableInDevMode,
+			protectModuleUnavailable: siteInDevMode && protectIsUnavailableInDevMode,
+			akismetActive,
+			akismetUnavailable: siteInDevMode && akismetIsUnavailableInDevMode,
 		};
 	}
 );
 
 const getFormSettings = partialRight( pick, [
+	'akismet',
 	'protect',
 	'jetpack_protect_global_whitelist',
 	'sso',
 	'jetpack_sso_match_by_email',
 	'jetpack_sso_require_two_step',
+	'wordpress_api_key'
 ] );
 
 export default flowRight(

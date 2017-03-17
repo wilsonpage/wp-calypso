@@ -21,6 +21,7 @@ import FormSettingExplanation from 'components/forms/form-setting-explanation';
 
 const SpamFilteringSettings = ( {
 	akismetActive,
+	fields,
 	isRequestingSettings,
 	isSavingSettings,
 	onChangeField,
@@ -43,6 +44,7 @@ const SpamFilteringSettings = ( {
 					<FormFieldset>
 						<FormLabel>{ translate( 'Your API Key ' ) }</FormLabel>
 						<FormTextInput
+							value={ fields.wordpress_api_key || '' }
 							disabled={ isRequestingSettings || isSavingSettings }
 							onChange={ onChangeField( 'wordpress_api_key' ) }
 							/>
