@@ -24,6 +24,7 @@ import {
 } from 'state/selectors';
 import SpamFilteringSettings from './spam-filtering-settings';
 import { getPluginsForSite } from 'state/plugins/premium/selectors';
+import QueryPluginKeys from 'components/data/query-plugin-keys';
 
 class SiteSettingsFormSecurity extends Component {
 	renderSectionHeader( title, showButton = true, disableButton = false ) {
@@ -84,6 +85,8 @@ class SiteSettingsFormSecurity extends Component {
 					onChangeField={ onChangeField }
 					setFieldValue={ setFieldValue }
 				/>
+
+				<QueryPluginKeys siteId={ siteId } />
 
 				{ this.renderSectionHeader( translate( 'Spam filtering' ), true, disableSpamFiltering ) }
 				<SpamFilteringSettings

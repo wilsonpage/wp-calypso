@@ -18,7 +18,6 @@ import ExternalLink from 'components/external-link';
 import { getSelectedSiteId, getSelectedSiteSlug } from 'state/ui/selectors';
 import { updateSettings } from 'state/jetpack/settings/actions';
 import FormSettingExplanation from 'components/forms/form-setting-explanation';
-import QueryPluginKeys from 'components/data/query-plugin-keys';
 import { getPluginsForSite } from 'state/plugins/premium/selectors';
 
 const SpamFilteringSettings = ( {
@@ -28,22 +27,32 @@ const SpamFilteringSettings = ( {
 	isRequestingSettings,
 	isSavingSettings,
 	onChangeField,
-	siteId,
 	siteSlug,
 	translate
 } ) => {
 	const header = akismetActive
 		? translate( 'Your site is protected from spam' )
-		: translate( 'Your site is not protected from spam. {{link}} Install & activate spam filtering{{/link}}.', {
-			components: {
-				link: <a
-					href={ `/plugins/${ siteSlug }` } />
-			}
-		} );
+		: (
+			<div>
+				<div>
+					{ translate( 'Your site is not protected from spam.' ) }
+				</div>
+				<FormSettingExplanation>
+						{
+							translate( '{{link}} Install & activate Akismet on your site{{/link}}.', {
+								components: {
+									link: <a
+										href={ `/plugins/${ siteSlug }` } />
+								}
+							} )
+						}
+				</FormSettingExplanation>
+			</div>
+		);
+
 	return (
 		<div>
 			<FoldableCard header={ header }>
-				<QueryPluginKeys siteId={ siteId } />
 				<div className="spam-filtering-settings__module-settings">
 						<div className="spam-filtering-settings__info-link-container site-settings__info-link-container">
 							<InfoPopover >
