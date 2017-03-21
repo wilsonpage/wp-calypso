@@ -3,7 +3,7 @@
  */
 var React = require( 'react' ),
 	debug = require( 'debug' )( 'calypso:my-sites:site-settings:security:monitor' );
-
+import { connect } from 'react-redux';
 /**
  * Internal dependencies
  */
@@ -17,8 +17,9 @@ var config = require( 'config' ),
 	SectionHeader = require( 'components/section-header' ),
 	Button = require( 'components/button' );
 import { protectForm } from 'lib/protect-form';
+import { canJetpackSiteManage, isJetpackModuleActive } from 'state/sites/selectors';
 
-module.exports = protectForm( React.createClass( {
+module.exports = connectComponent( protectForm( React.createClass( {
 
 	displayName: 'SiteSettingsFormJetpackMonitor',
 
@@ -52,14 +53,6 @@ module.exports = protectForm( React.createClass( {
 				} );
 			} else {
 				debug( 'error getting Monitor settings', error );
-			}
-		} ).bind( this ) );
-
-		site.verifyModulesActive( [ 'monitor' ], ( function( error, moduleStatus ) {
-			if ( ! error ) {
-				this.setState( { enabled: moduleStatus } );
-			} else {
-				debug( 'error getting module status', error );
 			}
 		} ).bind( this ) );
 	},
@@ -195,7 +188,7 @@ module.exports = protectForm( React.createClass( {
 		return (
 			<div>
 				<SectionHeader label={ this.translate( 'Jetpack Monitor' ) }>
-					{ this.state.enabled
+					{ this.props.monitorActive
 						? this.deactivateFormButtons()
 						: this.activateFormButtons()
 
@@ -203,7 +196,7 @@ module.exports = protectForm( React.createClass( {
 				</SectionHeader>
 				<Card className="jetpack-monitor-settings">
 					{
-						this.state.enabled
+						this.props.monitorActive
 						? this.settings()
 						: this.prompt()
 					}
@@ -213,4 +206,15 @@ module.exports = protectForm( React.createClass( {
 		);
 	}
 
-} ) );
+} ) ) );
+
+function connectComponent( Component ) {
+	return connect(
+		( state, ownProps ) => {
+			return {
+				canJetpackSiteManage: canJetpackSiteManage( state, ownProps.site.ID ),
+				monitorActive: isJetpackModuleActive( state, ownProps.site.ID, 'monitor' )
+			};
+		}
+	)( Component );
+}
