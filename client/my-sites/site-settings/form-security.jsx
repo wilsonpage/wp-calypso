@@ -3,7 +3,7 @@
  */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { flowRight, partialRight, pick } from 'lodash';
+import { flowRight, partialRight, pick, find } from 'lodash';
 import { localize } from 'i18n-calypso';
 
 /**
@@ -23,6 +23,7 @@ import {
 	isJetpackSiteInDevelopmentMode
 } from 'state/selectors';
 import SpamFilteringSettings from './spam-filtering-settings';
+import { getPluginsForSite } from 'state/plugins/premium/selectors';
 
 class SiteSettingsFormSecurity extends Component {
 	renderSectionHeader( title, showButton = true, disableButton = false ) {
@@ -54,6 +55,7 @@ class SiteSettingsFormSecurity extends Component {
 			protectModuleActive,
 			protectModuleUnavailable,
 			akismetUnavailable,
+			akismetActive,
 			setFieldValue,
 			siteId,
 			translate
@@ -64,7 +66,7 @@ class SiteSettingsFormSecurity extends Component {
 		}
 
 		const disableProtect = ! protectModuleActive || protectModuleUnavailable;
-		const disableSpamFiltering = ! protectModuleActive || akismetUnavailable;
+		const disableSpamFiltering = ! akismetActive || akismetUnavailable;
 
 		return (
 			<form
@@ -85,6 +87,7 @@ class SiteSettingsFormSecurity extends Component {
 
 				{ this.renderSectionHeader( translate( 'Spam filtering' ), true, disableSpamFiltering ) }
 				<SpamFilteringSettings
+					akismetActive={ akismetActive }
 					fields={ fields }
 					handleAutosavingToggle={ handleAutosavingToggle }
 					isSavingSettings={ isSavingSettings }
@@ -108,17 +111,17 @@ const connectComponent = connect(
 	( state ) => {
 		const siteId = getSelectedSiteId( state );
 		const protectModuleActive = !! isJetpackModuleActive( state, siteId, 'protect' );
-		const akismetActive = !! isJetpackModuleActive( state, siteId, 'akismet' );
 		const siteInDevMode = isJetpackSiteInDevelopmentMode( state, siteId );
 		const protectIsUnavailableInDevMode = isJetpackModuleUnavailableInDevelopmentMode( state, siteId, 'protect' );
 		const akismetIsUnavailableInDevMode = isJetpackModuleUnavailableInDevelopmentMode( state, siteId, 'akismet' );
 		const jetpackSettingsUiSupported = siteSupportsJetpackSettingsUi( state, siteId );
+		const plugins = getPluginsForSite( state, siteId );
 
 		return {
 			jetpackSettingsUiSupported,
 			protectModuleActive,
 			protectModuleUnavailable: siteInDevMode && protectIsUnavailableInDevMode,
-			akismetActive,
+			akismetActive: !! find( plugins, { name: 'akismet' } ),
 			akismetUnavailable: siteInDevMode && akismetIsUnavailableInDevMode,
 		};
 	}

@@ -4,6 +4,7 @@
 import React, { PropTypes } from 'react';
 import { localize } from 'i18n-calypso';
 import { connect } from 'react-redux';
+import { get, find } from 'lodash';
 
 /**
  * Internal dependencies
@@ -14,38 +15,48 @@ import FormLabel from 'components/forms/form-label';
 import FormTextInput from 'components/forms/form-text-input';
 import InfoPopover from 'components/info-popover';
 import ExternalLink from 'components/external-link';
-import { isJetpackModuleActive } from 'state/selectors';
-import { getSelectedSiteId } from 'state/ui/selectors';
+import { getSelectedSiteId, getSelectedSiteSlug } from 'state/ui/selectors';
 import { updateSettings } from 'state/jetpack/settings/actions';
 import FormSettingExplanation from 'components/forms/form-setting-explanation';
+import QueryPluginKeys from 'components/data/query-plugin-keys';
+import { getPluginsForSite } from 'state/plugins/premium/selectors';
 
 const SpamFilteringSettings = ( {
 	akismetActive,
+	akismetKey,
 	fields,
 	isRequestingSettings,
 	isSavingSettings,
 	onChangeField,
+	siteId,
+	siteSlug,
 	translate
 } ) => {
 	const header = akismetActive
 		? translate( 'Your site is protected from spam' )
-		: translate( 'Install & activate Spam filtering' );
+		: translate( 'Your site is not protected from spam. {{link}} Install & activate spam filtering{{/link}}.', {
+			components: {
+				link: <a
+					href={ `/plugins/${ siteSlug }` } />
+			}
+		} );
 	return (
 		<div>
 			<FoldableCard header={ header }>
+				<QueryPluginKeys siteId={ siteId } />
 				<div className="spam-filtering-settings__module-settings">
 						<div className="spam-filtering-settings__info-link-container site-settings__info-link-container">
 							<InfoPopover >
 								<ExternalLink target="_blank" icon href={ 'https://jetpack.com/features/security/spam-filtering/' } >
-									{ translate( 'Learn more about Spam filtering.' ) }
+									{ translate( 'Learn more about spam filtering.' ) }
 								</ExternalLink>
 							</InfoPopover>
 						</div>
 					<FormFieldset>
 						<FormLabel>{ translate( 'Your API Key ' ) }</FormLabel>
 						<FormTextInput
-							value={ fields.wordpress_api_key || '' }
-							disabled={ isRequestingSettings || isSavingSettings }
+							value={ fields.wordpress_api_key || akismetKey || '' }
+							disabled={ ! akismetActive || isRequestingSettings || isSavingSettings }
 							onChange={ onChangeField( 'wordpress_api_key' ) }
 							/>
 						<FormSettingExplanation>
@@ -78,10 +89,11 @@ SpamFilteringSettings.propTypes = {
 export default connect(
 	( state ) => {
 		const selectedSiteId = getSelectedSiteId( state );
+		const plugins = getPluginsForSite( state, selectedSiteId );
 		return {
 			siteId: selectedSiteId,
-			akismetActive: true,
-			akismetActive2: !! isJetpackModuleActive( state, selectedSiteId, 'akismet' )
+			siteSlug: getSelectedSiteSlug( state ),
+			akismetKey: get( find( plugins, { name: 'akismet' } ), 'key' )
 		};
 	},
 	{
