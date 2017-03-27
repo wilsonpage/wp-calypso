@@ -95,7 +95,9 @@ const webpackConfig = {
 			seed: 0
 		} ),
 		new webpack.IgnorePlugin( /^props$/ ),
-		new CopyWebpackPlugin( [ { from: 'node_modules/flag-icon-css/flags/4x3', to: 'images/flags' } ] )
+		new CopyWebpackPlugin( [ { from: 'node_modules/flag-icon-css/flags/4x3', to: 'images/flags' } ] ),
+		new webpack.IgnorePlugin( /^\.\/locale$/, /moment$/ ),
+		new webpack.IgnorePlugin( /^\.\/data\/packed\/latest\.json$/, /moment-timezone$/ )
 	],
 	externals: [ 'electron' ]
 };
