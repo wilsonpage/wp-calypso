@@ -15,31 +15,16 @@ import TokenField from 'components/token-field';
 export default class ProductVariationTypesForm extends Component {
 
 	static propTypes = {
-		product: PropTypes.shape( {
-			id: PropTypes.number.isRequired,
-			name: PropTypes.string.isRequired,
-			type: PropTypes.string.isRequired,
-		} ),
-		variations: PropTypes.arrayOf( PropTypes.shape( {
-			type: PropTypes.string.isRequired,
-			values: PropTypes.arrayOf( PropTypes.string )
-		} ) ),
+		product: PropTypes.object.isRequired,
+		editProduct: PropTypes.func.isRequired,
 	};
 
 	constructor( props ) {
 		super( props );
 
-		this.state = {
-			variations: this.props.variations || this.getInitialFields(),
-		};
-
 		this.addVariation = this.addVariation.bind( this );
 		this.updateType = this.updateType.bind( this );
 		this.updateValues = this.updateValues.bind( this );
-	}
-
-	getInitialFields() {
-		return [ this.getNewFields() ];
 	}
 
 	getNewFields() {
@@ -49,17 +34,23 @@ export default class ProductVariationTypesForm extends Component {
 		};
 	}
 
+	addVariation( event ) {
+		event.preventDefault();
+		const updatedVariations = [ ...this.props.product.variationTypes, this.getNewFields() ];
+		this.props.editProduct( null, 'variationTypes', updatedVariations );
+	}
+
 	updateType( index, event ) {
 		event.preventDefault();
-		const updatedVariations = [ ...this.state.variations ];
+		const updatedVariations = [ ...this.props.product.variationTypes ];
 		updatedVariations[ index ] = { ...updatedVariations[ index ], type: event.target.value };
-		this.setState( { variations: updatedVariations } );
+		this.props.editProduct( null, 'variationTypes', updatedVariations );
 	}
 
 	updateValues( index, value ) {
-		const updatedVariations = [ ...this.state.variations ];
+		const updatedVariations = [ ...this.props.product.variationTypes ];
 		updatedVariations[ index ] = { ...updatedVariations[ index ], values: value };
-		this.setState( { variations: updatedVariations } );
+		this.props.editProduct( null, 'variationTypes', updatedVariations );
 	}
 
 	renderInputs( variation, index ) {
@@ -82,14 +73,13 @@ export default class ProductVariationTypesForm extends Component {
 		);
 	}
 
-	addVariation( event ) {
-		event.preventDefault();
-		const updatedVariations = [ ...this.state.variations, this.getNewFields() ];
-		this.setState( { variations: updatedVariations } );
-	}
-
 	render() {
-		const inputs = this.state.variations.map( this.renderInputs, this );
+		if ( ! this.props.product.variationTypes ) {
+			this.props.product.variationTypes = [ this.getNewFields() ];
+		}
+
+		const inputs = this.props.product.variationTypes.map( this.renderInputs, this );
+
 		return (
 			<div className="product-variation-types-form__wrapper">
 				<strong>{ i18n.translate( 'Variation types' ) }</strong>
@@ -108,7 +98,7 @@ export default class ProductVariationTypesForm extends Component {
 					{inputs}
 				</div>
 
-				<Button onClick={ this.addVariation }>{ i18n.translate( 'Add another variation' ) }</Button>
+				<Button onClick={ this.addVariation }>{ i18n.translate( 'Add another variation type' ) }</Button>
 		</div>
 		);
 	}

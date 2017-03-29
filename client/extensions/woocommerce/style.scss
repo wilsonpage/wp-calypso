@@ -1,4 +1,4 @@
-.foldable-card.product-variations .foldable-card__content {
+.foldable-card.product-form__product-variations .foldable-card__content {
 	padding: 0;
 	border: 0;
 }
@@ -10,7 +10,8 @@
 
 .product-variation-types-form__group {
 
-	.product-variation-types-form__fieldset, .product-variation-types-form__labels {
+	.product-variation-types-form__fieldset,
+	.product-variation-types-form__labels {
 		display: flex;
 	}
 
@@ -28,5 +29,51 @@
 
 	.token-field {
 		margin-left: 16px;
+	}
+}
+
+.form-dimensions-input {
+	span {
+		padding: 10px 5px;
+		color: lighten( $gray, 20% );
+	}
+
+	.form-text-input {
+		width: 65px;
+		text-align: center;
+	}
+}
+
+.product-variation-form {
+	padding: 24px;
+
+	.form-text-input-with-affixes {
+		width: 100px;
+		padding-left: 15px;
+	}
+
+	.form-dimensions-input {
+		padding-left: 15px;
+	}
+}
+
+.product-variation-form__table {
+	border-spacing: 20px 10px;
+	border-collapse: collapse;
+
+	th, td {
+		padding: 10px;
+	}
+
+	.product-variation-form__table_delivery_method {
+		display: flex;
+	}
+
+	.product-variation-form__table_price {
+		vertical-align: bottom;
+	}
+
+	.product-variation-form__table_default_settings {
+		background: lighten( $gray, 30% );
 	}
 }
