@@ -124,7 +124,7 @@ const sections = [
 	{
 		name: 'settings-traffic',
 		paths: [ '/settings/traffic', '/settings/seo', '/settings/analytics' ],
-		module: 'my-sites/site-settings/traffic',
+		module: 'my-sites/site-settings/settings-traffic',
 		secondary: true,
 		group: 'sites'
 	},
