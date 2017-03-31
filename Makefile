@@ -232,6 +232,23 @@ docker-run:
 	@echo running wp-calypso docker image at localhost:3000
 	docker run -it --name wp-calypso --rm -p 80:3000 -e NODE_ENV='wpcalypso' -e CALYPSO_ENV='wpcalypso' wp-calypso
 
+# Desktop specific tasks
+# These are just convenience commands that run tasks from desktop/Makefile
+desktop-run:
+	@cd desktop; make run
+
+desktop-osx:
+	@cd desktop; make osx
+
+desktop-linux:
+	@cd desktop; make linux
+
+desktop-win32:
+	@cd desktop; make win32
+
+desktop-test:
+	@cd desktop; make test
+
 
 # rule that can be used as a prerequisite for other rules to force them to always run
 FORCE:
