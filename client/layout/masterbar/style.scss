@@ -298,7 +298,7 @@ $autobar-height: 20px;
 	}
 }
 
-.masterbar__reader {
+.masterbar__discussions {
 	@include breakpoint( ">480px" ) {
 		margin-right: auto;
 	}

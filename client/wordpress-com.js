@@ -215,6 +215,14 @@ sections.push( {
 	group: 'sites'
 } );
 
+sections.push( {
+	name: 'discussions',
+	paths: [ '/discussions' ],
+	module: 'discussions',
+	secondary: false,
+	group: 'discussions',
+} );
+
 // this MUST be the first section for /read paths so subsequent sections under /read can override settings
 sections.push( {
 	name: 'reader',

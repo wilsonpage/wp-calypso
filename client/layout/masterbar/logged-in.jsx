@@ -102,6 +102,18 @@ const MasterbarLoggedIn = React.createClass( {
 				>
 					{ this.translate( 'Reader', { comment: 'Toolbar, must be shorter than ~12 chars' } ) }
 				</Item>
+				<Item
+					tipTarget="discussions"
+					className="masterbar__discussions"
+					url="/discussions"
+					icon="comment"
+					onClick={ this.clickDiscussions }
+					isActive={ this.isActive( 'discussions' ) }
+					tooltip={ this.translate( 'Manage the discussions on your posts', { textOnly: true } ) }
+					preloadSection={ () => preload( 'discussions' ) }
+				>
+					{ this.translate( 'Discussions', { comment: 'Toolbar, must be shorter than ~12 chars' } ) }
+				</Item>
 				{ config.isEnabled( 'resume-editing' ) && <ResumeEditing /> }
 				<Publish
 					sites={ this.props.sites }
