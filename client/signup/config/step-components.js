@@ -15,7 +15,6 @@ import ThemeSelectionComponent from 'signup/steps/theme-selection';
 import UserSignupComponent from 'signup/steps/user';
 import PlansStepWithoutFreePlan from 'signup/steps/plans-without-free';
 
-
 export default {
 	'design-type': DesignTypeComponent,
 	'design-type-with-store': DesignTypeWithStoreComponent,
@@ -37,4 +36,5 @@ export default {
 	'themes-site-selected': ThemeSelectionComponent,
 	user: UserSignupComponent,
 	'user-social': UserSignupComponent,
+	'oauth2-user': UserSignupComponent
 };

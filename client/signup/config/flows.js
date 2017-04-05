@@ -213,6 +213,15 @@ const flows = {
 		description: 'User-first signup flow',
 		lastModified: '2016-01-18',
 	},
+
+	wpcc: {
+		steps: [ 'oauth2-user' ],
+		destination: function( dependencies ) {
+			return dependencies.oauth2_redirect.split( '@' )[ 1 ];
+		},
+		description: 'WordPress.com Connect signup flow',
+		lastModified: '2017-04-03',
+	}
 };
 
 if ( config.isEnabled( 'signup/domain-first-flow' ) ) {

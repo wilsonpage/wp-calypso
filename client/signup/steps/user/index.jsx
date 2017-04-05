@@ -79,6 +79,8 @@ export class UserStep extends Component {
 			flowName: this.props.flowName,
 			stepName: this.props.stepName,
 			...data
+		}, null, {
+			oauth2_redirect: data.queryArgs.oauth2_redirect
 		} );
 
 		this.props.goToNextStep();
@@ -88,6 +90,8 @@ export class UserStep extends Component {
 		const queryArgs = {
 			jetpackRedirect: get( this.props, 'queryObject.jetpack_redirect' )
 		};
+
+		queryArgs.oauth2_redirect = get( this.props, 'queryObject.oauth2_redirect' );
 
 		const formWithoutPassword = {
 			...form,
