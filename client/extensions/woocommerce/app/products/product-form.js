@@ -12,13 +12,14 @@ import { connect } from 'react-redux';
 import FoldableCard from 'components/foldable-card';
 import ProductVariationTypesForm from './product-variation-types-form';
 import FormToggle from 'components/forms/form-toggle';
-import { editProduct } from '../../state/products/actions';
+import { editProduct, generateVariations } from '../../state/products/actions';
 
 class ProductForm extends Component {
 
 	static propTypes = {
 		product: PropTypes.object.isRequired,
 		editProduct: PropTypes.func.isRequired,
+		generateVariations: PropTypes.func.isRequired,
 	};
 
 	constructor( props ) {
@@ -60,6 +61,7 @@ class ProductForm extends Component {
 					<ProductVariationTypesForm
 						product={ product }
 						editProduct={ this.props.editProduct }
+						generateVariations={ this.props.generateVariations }
 					/>
 				) }
 			</FoldableCard>
@@ -80,6 +82,7 @@ function mapDispatchToProps( dispatch ) {
 	return bindActionCreators(
 		{
 			editProduct,
+			generateVariations,
 		},
 		dispatch
 	);

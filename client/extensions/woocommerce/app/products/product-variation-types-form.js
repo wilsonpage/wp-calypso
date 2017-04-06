@@ -17,6 +17,7 @@ export default class ProductVariationTypesForm extends Component {
 	static propTypes = {
 		product: PropTypes.object.isRequired,
 		editProduct: PropTypes.func.isRequired,
+		generateVariations: PropTypes.func.isRequired,
 	};
 
 	constructor( props ) {
@@ -25,6 +26,7 @@ export default class ProductVariationTypesForm extends Component {
 		this.addVariationType = this.addVariationType.bind( this );
 		this.updateType = this.updateType.bind( this );
 		this.updateValues = this.updateValues.bind( this );
+		this.generateVariations = this.generateVariations.bind( this );
 	}
 
 	getNewFields() {
@@ -49,6 +51,10 @@ export default class ProductVariationTypesForm extends Component {
 		const updatedVariations = [ ...this.props.product.variationTypes ];
 		updatedVariations[ index ] = { ...updatedVariations[ index ], values: value };
 		this.props.editProduct( this.props.product.id, 'variationTypes', updatedVariations );
+	}
+
+	generateVariations() {
+		this.props.generateVariations( this.props.product.id );
 	}
 
 	renderInputs( variation, index ) {
@@ -95,6 +101,7 @@ export default class ProductVariationTypesForm extends Component {
 				</div>
 
 				<Button onClick={ this.addVariationType }>{ i18n.translate( 'Add another variation' ) }</Button>
+				<Button onClick={ this.generateVariations }>{ i18n.translate( 'Update variations' ) }</Button>
 		</div>
 		);
 	}
