@@ -6,7 +6,7 @@
 	(`import * as blah from 'blah'`) to named imports (`import named from 'blah'`).
 
 	How to use:
-	./bin/codemods/commonjs-exports-named path-to-transform/
+	./bin/codemods/named-export-from-default path-to-transform/
 */
 
 const path = require( 'path' );
@@ -24,15 +24,15 @@ const binArgs = [
 	'--extensions=js,jsx',
 	'--useTabs=true',
 	'--arrayBracketSpacing=true',
-	args[0],
+	args[ 0 ],
 ];
-const binPath = path.join( '.', 'node_modules', '.bin', 'jscodeshift' )
+const binPath = path.join( '.', 'node_modules', '.bin', 'jscodeshift' );
 const jscodeshift = child_process.spawn( binPath, binArgs );
 
 jscodeshift.stdout.on( 'data', ( data ) => {
 	process.stdout.write( data );
-});
+} );
 
 jscodeshift.stderr.on( 'data', ( data ) => {
 	process.stderr.write( data );
-});
+} );
