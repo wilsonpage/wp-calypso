@@ -1,0 +1,148 @@
+#!/usr/bin/env node
+
+//
+// External dependencies
+//
+const async = require( 'async' );
+const chalk = require( 'chalk' );
+const child_process = require( 'child_process' );
+const inquirer = require( 'inquirer' );
+const path = require( 'path' );
+const program = require( 'commander' );
+
+//
+// Program Definition
+//
+program
+	.version( '1.0.0' )
+	.usage( '<path>' )
+	.description( 'Interactively execute codemod transformations!' )
+	.arguments( '[path]' )
+	.parse( process.argv );
+
+const pathToTransform = program.args[ 0 ];
+
+// Display help by default (e.g. if no command was provided)
+if ( process.argv.slice( 2 ).length <= 0 ) {
+	program.help();
+}
+
+//
+// Prepare for user input handling
+//
+const transformChoices = [
+	new inquirer.Separator( chalk.reset(
+		'--------- ES2015 Codemods --------' )
+	),
+	{
+		'short': 'commonjs-imports',
+		checked: true,
+		name: formatName( 'CommonJS to ES Module Imports', 'commonjs-imports' ),
+		value: 'commonjs-imports',
+	},
+	{
+		'short': 'commonjs-exports',
+		checked: true,
+		name: formatName( 'CommonJS to ES Module Exports', 'commonjs-exports' ),
+		value: 'commonjs-exports',
+	},
+	{
+		'short': 'named-exports-from-default',
+		checked: true,
+		name: formatName( 'Named Export Generation', 'named-exports-from-default' ),
+		value: 'named-exports-from-default',
+	},
+	new inquirer.Separator( chalk.reset(
+		`---------- ${ chalk.red( 'Experimental' ) } ----------` )
+	),
+	{
+		'short': 'commonjs-imports-hoist',
+		name: formatName(
+			'CommonJS to ES Module Imports with hoisting', 'commonjs-imports-hoist'
+		),
+		value: 'commonjs-imports-hoist',
+	},
+];
+
+const questions = [
+	{
+		type: 'checkbox',
+		name: 'transforms',
+		message: 'Select transformations to apply:',
+		choices: transformChoices,
+		validate: function( input ) {
+			if ( input.length === 0 ) {
+				return 'Please select at least one transformation.';
+			}
+			if ( input.includes( 'commonjs-imports' ) && input.includes( 'commonjs-imports-hoist' ) ) {
+				return (
+					`Please select only ${ chalk.bold( 'one' ) } CommonJS Import transformation.\n   ` +
+					`Both ${ chalk.bold( 'commonjs-imports' ) } and ${ chalk.bold( 'commonjs-imports-hoist' ) } are selected.`
+				);
+			}
+
+			return true;
+		}
+	},
+	{
+		'default': false,
+		message: `Transform ${ chalk.blue( pathToTransform ) } with the selected codemods?`,
+		name: 'confirm',
+		type: 'confirm',
+	}
+];
+
+//
+// Handle user input and execute codemods
+//
+inquirer.prompt( questions ).then( function( { transforms, confirm } ) {
+	if ( ! confirm ) {
+		process.exit( 0 );
+	}
+	const transformTasks = transforms.map( transform => executeTransformation.bind( null, transform ) );
+	async.waterfall( transformTasks, ( err ) => {
+		if ( err ) {
+			writeErrorLog( 'Transformation failed.' );
+		} else {
+			writeExecutionLog( 'Transformation complete!' );
+		}
+	} );
+} );
+
+//
+// Helper functions
+//
+function formatName( name, subtitle ) {
+	return `${ name } ${ chalk.gray( `(${ subtitle })` ) }`;
+}
+function writeExecutionLog( message, prefix = '✓' ) {
+	process.stdout.write(
+		chalk.green( `${ prefix } ` ) + chalk.bold( `${ message }\n` )
+	);
+}
+function writeErrorLog( message, prefix = 'X' ) {
+	process.stderr.write(
+		chalk.red( `${ prefix } ` ) + chalk.bold( `${ message }\n` )
+	);
+}
+function executeTransformation( name, callback ) {
+	writeExecutionLog( `Executing ${ name } transformation` );
+	const binPath = path.join( '.', 'bin', 'codemods', name );
+	const transform = child_process.spawn( binPath, [ pathToTransform ] );
+
+	transform.stdout.on( 'data', ( data ) => {
+		process.stdout.write( data );
+	} );
+
+	transform.stderr.on( 'data', ( data ) => {
+		process.stderr.write( data );
+	} );
+
+	transform.on( 'exit', ( code ) => {
+		if ( code === 0 ) {
+			callback();
+		} else {
+			writeErrorLog( `Transformation ${ name } failed, exiting` );
+		}
+	} );
+}
