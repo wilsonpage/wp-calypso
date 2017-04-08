@@ -39,11 +39,7 @@ const EasyTab = ( {
 							checked={ wp_cache_enabled }
 							onChange={ handleToggle( 'wp_cache_enabled' ) }>
 							<span>
-								{ translate( 'Caching On {{em}}(Recommended){{/em}}',
-									{
-										components: { em: <em /> }
-									}
-								) }
+								{ translate( 'Enable Page Caching' ) }
 							</span>
 						</FormToggle>
 					</FormFieldset>
