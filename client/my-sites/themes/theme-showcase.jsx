@@ -24,10 +24,7 @@ import { getCurrentUserId } from 'state/current-user/selectors';
 import ThemePreview from './theme-preview';
 import config from 'config';
 import { isATEnabledForCurrentSite } from 'lib/automated-transfer';
-
-const ThemesSearchCard = config.isEnabled( 'manage/themes/magic-search' )
-	? require( './themes-magic-search-card' )
-	: require( './themes-search-card' );
+import ThemesSearchCard from './themes-magic-search-card';
 
 const themesMeta = {
 	'': {
