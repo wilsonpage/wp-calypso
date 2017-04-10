@@ -278,4 +278,22 @@ describe( 'Installed plugin selectors', function() {
 			expect( selectors.isPluginDoingAction( state, 'site.two', 'akismet/akismet' ) ).to.be.false;
 		} );
 	} );
+
+	describe( 'hasActivePlugin', () => {
+		it( 'should return false if the site cannot be found', () => {
+			expect( selectors.hasActivePlugin( state, 'some-unknown-id', 'my-slug' ) ).to.be.false;
+		} );
+
+		it( 'should return false if the plugin cannot be found', () => {
+			expect( selectors.hasActivePlugin( state, 'site.two', 'some-non-existant-slug' ) ).to.be.false;
+		} );
+
+		it( 'should return false if the plugin is found, but not active', () => {
+			expect( selectors.hasActivePlugin( state, 'site.two', 'hello-dolly' ) ).to.be.false;
+		} );
+
+		it( 'should return true if the plugin is found and is active', () => {
+			expect( selectors.hasActivePlugin( state, 'site.two', 'jetpack' ) ).to.be.true;
+		} );
+	} );
 } );

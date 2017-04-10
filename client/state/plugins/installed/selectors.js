@@ -127,3 +127,24 @@ export function isPluginDoingAction( state, siteId, pluginId ) {
 	const status = getStatusForPlugin( state, siteId, pluginId );
 	return ( !! status ) && ( 'inProgress' === status.status );
 }
+
+/**
+ * Returns a Boolean indicating if a site has a particular plugin that
+ * is active. This is useful for jetpack connected sites.
+ *
+ * @param {Object} state - Global state tree
+ * @param {Number} siteId - Site ID
+ * @param {String} pluginSlug - Plugin slug
+ * @return {Boolean} - truthiness of a site having an active plugin
+ */
+export function hasActivePlugin( state, siteId, pluginSlug ) {
+	const sitePlugins = state.plugins.installed.plugins[ siteId ];
+	if ( ! sitePlugins ) {
+		return false;
+	}
+	const plugin = find( sitePlugins, sitePlugin => sitePlugin.slug === pluginSlug );
+	if ( ! plugin ) {
+		return false;
+	}
+	return plugin.active;
+}
