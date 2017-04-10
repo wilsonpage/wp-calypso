@@ -45,6 +45,14 @@ module.exports = {
 		},
 		defaultVariation: 'hideSurveyStep',
 	},
+	signupPlansReorderTest: {
+		datestamp: '20170410',
+		variations: {
+			original: 50,
+			modified: 50,
+		},
+		defaultVariation: 'original',
+	},
 	conciergeOfferOnCancel: {
 		datestamp: '20170410',
 		variations: {
