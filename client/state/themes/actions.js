@@ -23,6 +23,7 @@ import {
 	THEME_DELETE,
 	THEME_DELETE_SUCCESS,
 	THEME_DELETE_FAILURE,
+	THEME_FILTERS_REQUEST,
 	THEME_INSTALL,
 	THEME_INSTALL_SUCCESS,
 	THEME_INSTALL_FAILURE,
@@ -831,6 +832,12 @@ export function hideThemePreview() {
 	return {
 		type: THEME_PREVIEW_STATE,
 		themeId: null
+	};
+}
+
+export function requestThemeFilters() {
+	return {
+		type: THEME_FILTERS_REQUEST,
 	};
 }
 
