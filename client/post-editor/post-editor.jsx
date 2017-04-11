@@ -92,7 +92,8 @@ export const PostEditor = React.createClass( {
 			showVerifyEmailDialog: false,
 			showAutosaveDialog: true,
 			isLoadingAutosave: false,
-			isTitleFocused: false
+			isTitleFocused: false,
+			previewAction: null
 		};
 	},
 
@@ -236,7 +237,7 @@ export const PostEditor = React.createClass( {
 						isSaveBlocked={ this.isSaveBlocked() }
 						isPublishing={ this.state.isPublishing }
 						isSaving={ this.state.isSaving }
-						onPreview={ this.onPreview }
+						onPreview={ this.onPreviewClick }
 						onPublish={ this.onPublish }
 						onSave={ this.onSave }
 						onSaveDraft={ this.props.onSaveDraft }
@@ -255,7 +256,7 @@ export const PostEditor = React.createClass( {
 							<EditorNotice
 								{ ...this.state.notice }
 								onDismissClick={ this.hideNotice }
-								onViewClick={ this.onPreview } />
+								onViewClick={ this.onViewClick } />
 							<EditorActionBar
 								isNew={ this.state.isNew }
 								onPrivatePublish={ this.onPublish }
@@ -342,8 +343,8 @@ export const PostEditor = React.createClass( {
 							onClose={ this.onPreviewClose }
 							isSaving={ this.state.isSaving || this.state.isAutosaving }
 							isLoading={ this.state.isLoading }
-							previewUrl={ this.state.previewUrl }
-							externalUrl={ this.state.previewUrl }
+							previewUrl={ this.state.previewAction === 'view' ? this.state.post.URL : this.state.previewUrl }
+							externalUrl={ this.state.previewAction === 'view' ? this.state.post.URL : this.state.previewUrl }
 						/>
 						: null }
 				</div>
@@ -580,6 +581,22 @@ export const PostEditor = React.createClass( {
 		this.setState( { isSaving: true } );
 	},
 
+	onViewClick: function( event ) {
+		if ( this.state.post.status === 'publish' ) {
+			this.setState( { previewAction: 'view' } );
+		}
+
+		this.onPreview( event );
+	},
+
+	onPreviewClick: function( event ) {
+		if ( this.state.previewAction ) {
+			this.setState( { previewAction: null } );
+		}
+
+		this.onPreview( event );
+	},
+
 	onPreview: function( event ) {
 		var status = 'draft',
 			previewPost;
@@ -598,10 +615,13 @@ export const PostEditor = React.createClass( {
 
 		previewPost = function() {
 			if ( this._previewWindow ) {
-				this._previewWindow.location = this.state.previewUrl;
+				this._previewWindow.location = ( this.state.previewAction === 'view' ? this.state.post.URL : this.state.previewUrl );
 				this._previewWindow.focus();
 			} else {
-				this._previewWindow = window.open( this.state.previewUrl, 'WordPress.com Post Preview' );
+				this._previewWindow = window.open(
+					( this.state.previewAction === 'view' ? this.state.post.URL : this.state.previewUrl ),
+					'WordPress.com Post Preview'
+				);
 			}
 		}.bind( this );
 
@@ -628,7 +648,10 @@ export const PostEditor = React.createClass( {
 	},
 
 	onPreviewClose: function() {
-		this.setState( { showPreview: false } );
+		this.setState( {
+			showPreview: false,
+			previewAction: null
+		} );
 	},
 
 	onSaveDraftFailure: function( error ) {
