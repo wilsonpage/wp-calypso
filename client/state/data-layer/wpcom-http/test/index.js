@@ -11,6 +11,7 @@ import useNock, { nock } from 'test/helpers/use-nock';
 import { extendAction } from 'state/utils';
 import {
 	failureMeta,
+	fetcherMap,
 	queueRequest,
 	successMeta,
 } from '../';
@@ -75,5 +76,101 @@ describe( '#queueRequest', () => {
 			expect( dispatch ).to.have.been.calledWith( extendAction( failer, failureMeta( error ) ) );
 			done();
 		}, 10 );
+	} );
+} );
+
+describe( '#fetcherMap', () => {
+	const wpcomReq = {};
+	const noopCallback = () => {};
+
+	describe( 'GET', () => {
+		let getFooAction;
+
+		beforeEach( () => {
+			wpcomReq.get = spy();
+			getFooAction = {
+				method: 'GET',
+				path: '/foo',
+			};
+		} );
+
+		it( 'should send with query', () => {
+			getFooAction.query = {
+				apiVersion: 'v2.0',
+				apiNamespace: 'wp/v2',
+			};
+
+			fetcherMap( 'GET', wpcomReq )( getFooAction, noopCallback );
+
+			expect( wpcomReq.get ).to.have.been.calledWith(
+				{ path: '/foo' },
+				{
+					apiVersion: 'v2.0',
+					apiNamespace: 'wp/v2',
+				},
+				noopCallback
+			);
+		} );
+	} );
+
+	describe( 'POST', () => {
+		let postFooAction;
+
+		beforeEach( () => {
+			wpcomReq.post = spy();
+			postFooAction = {
+				method: 'POST',
+				path: '/foo',
+			};
+		} );
+
+		it( 'should send formData with query', () => {
+			postFooAction.formData = [ [ 'foo', 'bar' ], ];
+			postFooAction.query = { apiVersion: 'v1.1' };
+
+			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
+
+			expect( wpcomReq.post ).to.have.been.calledWith(
+				{
+					path: '/foo',
+					formData: [ [ 'foo', 'bar' ], ],
+				},
+				{
+					apiVersion: 'v1.1',
+				},
+				null,
+				noopCallback
+			);
+		} );
+
+		it( 'it should prioritize formData over body', () => {
+			postFooAction.formData = [ [ 'foo', 'bar' ], ];
+			postFooAction.body = { lorem: 'ipsum' };
+
+			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
+
+			expect( wpcomReq.post ).to.have.been.calledWith(
+				{
+					path: '/foo',
+					formData: [ [ 'foo', 'bar' ], ],
+				},
+				{ },
+				null,
+				noopCallback
+			);
+		} );
+
+		it( 'should send body in the absence of any formData', () => {
+			postFooAction.body = { lorem: 'ipsum' };
+
+			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
+
+			expect( wpcomReq.post ).to.have.been.calledWith(
+				{ path: '/foo' },
+				{ },
+				{ lorem: 'ipsum' },
+				noopCallback
+			);
+		} );
 	} );
 } );
