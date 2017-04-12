@@ -109,7 +109,10 @@ class StatsSite extends Component {
 			<Main wideLayout={ true }>
 				<StatsFirstView />
 				<SidebarNavigation />
-				<StatsNavigation section={ period } />
+				<StatsNavigation
+					section={ period }
+					{ ...this.props }
+				/>
 				<div id="my-stats-content">
 					<ChartTabs
 						barClick={ this.barClick }
@@ -194,6 +197,7 @@ export default connect(
 	state => {
 		const siteId = getSelectedSiteId( state );
 		return {
+			siteId,
 			isJetpack: isJetpackSite( state, siteId ),
 			hasPodcasts: getSiteOption( state, siteId, 'podcasting_archive' ),
 			slug: getSelectedSiteSlug( state )
