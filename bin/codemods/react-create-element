@@ -19,8 +19,8 @@ if ( args.length === 0 ) {
 }
 
 const binArgs = [
-	'-t',
-	'node_modules/react-codemod/transforms/create-element-to-jsx.js',
+	'--transform=node_modules/react-codemod/transforms/create-element-to-jsx.js',
+	'--verbose=2',
 	'--extensions=js,jsx',
 	`--printOptions=${JSON.stringify(recastOptions)}`,
 	args[0],
