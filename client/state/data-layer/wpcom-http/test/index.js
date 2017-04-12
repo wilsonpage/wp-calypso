@@ -32,7 +32,9 @@ const failer = { type: 'FAIL' };
 const getMe = {
 	method: 'GET',
 	path: '/me',
-	apiVersion: 'v1.1',
+	query: {
+		apiVersion: '1.1',
+	},
 	onFailure: failer,
 	onSuccess: succeeder,
 };
