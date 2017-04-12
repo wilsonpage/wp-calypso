@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+
+/*
+	This codemod converts instances of React.createElement to use JSX instead.
+
+	How to use:
+	./bin/codemods/react-create-element path-to-transform/
+*/
+
+const path = require( 'path' );
+const child_process = require( 'child_process' );
+
+const recastOptions = require( './react-common-config' ).recast;
+
+const args = process.argv.slice( 2 );
+if ( args.length === 0 ) {
+	process.stdout.write( 'No files to transform\n' );
+	process.exit( 0 );
+}
+
+const binArgs = [
+	'-t',
+	'node_modules/react-codemod/transforms/create-element-to-jsx.js',
+	'--extensions=js,jsx',
+	`--printOptions=${JSON.stringify(recastOptions)}`,
+	args[0],
+];
+const binPath = path.join( '.', 'node_modules', '.bin', 'jscodeshift' )
+const jscodeshift = child_process.spawn( binPath, binArgs );
+
+jscodeshift.stdout.on( 'data', ( data ) => {
+	process.stdout.write( data );
+});
+
+jscodeshift.stderr.on( 'data', ( data ) => {
+	process.stderr.write( data );
+});
