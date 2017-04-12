@@ -19,8 +19,7 @@ if ( args.length === 0 ) {
 }
 
 const binArgs = [
-	'-t',
-	'node_modules/react-codemod/transforms/class.js',
+	'--transform=node_modules/react-codemod/transforms/class.js',
 	'--extensions=js,jsx',
 	'--pure-component=true',
 	`--printOptions=${JSON.stringify(recastOptions)}`,
