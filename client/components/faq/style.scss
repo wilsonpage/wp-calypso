@@ -48,6 +48,15 @@
 		&:nth-child( 3n+1 ) {
 			margin-left: 0;
 		}
+
+		// IE does not calculate width correctly which
+		// causes column breaks.
+		// Prevent column breaks by adding negative
+		// right margin to the last column.
+		// https://github.com/Automattic/wp-calypso/issues/11534
+		&:nth-child( 3n ) {
+			margin-right: -0.1px;
+		}
 	}
 }
 
