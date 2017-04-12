@@ -19,8 +19,8 @@ if ( args.length === 0 ) {
 }
 
 const binArgs = [
-	'-t',
-	'node_modules/react-codemod/transforms/React-PropTypes-to-prop-types.js',
+	'--transform=node_modules/react-codemod/transforms/React-PropTypes-to-prop-types.js',
+	'--verbose=2',
 	'--extensions=js,jsx',
 	`--printOptions=${JSON.stringify(recastOptions)}`,
 	args[0],
