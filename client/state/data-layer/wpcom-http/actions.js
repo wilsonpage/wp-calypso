@@ -6,6 +6,7 @@ import { WPCOM_HTTP_REQUEST } from 'state/action-types';
 /**
  * Returns a valid WordPress.com API HTTP Request action object
  *
+ * @param {string} [apiNamespace] WP API namespace for request
  * @param {string} [apiVersion] specific API version for request
  * @param {Object} [body] JSON-serializable body for POST requests
  * @param {string} method name of HTTP method to use
@@ -20,6 +21,7 @@ import { WPCOM_HTTP_REQUEST } from 'state/action-types';
  * @returns {Object} Redux action describing WordPress.com API HTTP request
  */
 export const http = ( {
+	apiNamespace = null,
 	apiVersion = 'v1',
 	body = {},
 	method,
@@ -38,6 +40,7 @@ export const http = ( {
 	query: Object.assign(
 		{ apiVersion },
 		query,
+		apiNamespace && { apiNamespace },
 	),
 	formData,
 	onSuccess: onSuccess || action,
