@@ -98,7 +98,7 @@ describe( '#fetcherMap', () => {
 
 		it( 'should send with query', () => {
 			getFooAction.query = {
-				apiVersion: 'v2.0',
+				apiVersion: '2.0',
 				apiNamespace: 'wp/v2',
 			};
 
@@ -107,7 +107,7 @@ describe( '#fetcherMap', () => {
 			expect( wpcomReq.get ).to.have.been.calledWith(
 				{ path: '/foo' },
 				{
-					apiVersion: 'v2.0',
+					apiVersion: '2.0',
 					apiNamespace: 'wp/v2',
 				},
 				noopCallback
@@ -128,7 +128,7 @@ describe( '#fetcherMap', () => {
 
 		it( 'should send formData with query', () => {
 			postFooAction.formData = [ [ 'foo', 'bar' ], ];
-			postFooAction.query = { apiVersion: 'v1.1' };
+			postFooAction.query = { apiVersion: '1.1' };
 
 			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
 
@@ -138,7 +138,7 @@ describe( '#fetcherMap', () => {
 					formData: [ [ 'foo', 'bar' ], ],
 				},
 				{
-					apiVersion: 'v1.1',
+					apiVersion: '1.1',
 				},
 				null,
 				noopCallback
