@@ -5,6 +5,11 @@ import React from 'react';
 import { noop } from 'lodash';
 import { localize } from 'i18n-calypso';
 
+/**
+ * Internal dependencies
+ */
+import SelectDropdown from 'components/select-dropdown';
+
 class FollowingManageSortControls extends React.Component {
 
 	static propTypes = {
@@ -22,15 +27,19 @@ class FollowingManageSortControls extends React.Component {
 
 	render() {
 		const sortOrder = this.props.sortOrder;
+		const options = [
+			{ label: 'Sort order', value: 'sort-order', isLabel: true },
+			{ value: 'date-followed', label: 'Sort by date' },
+			{ value: 'alpha', label: 'Sort by name' },
+		];
 
 		return (
-			<div className="following-manage__sort-controls">
-				<label htmlFor="sort-control-select">{ this.props.translate( 'Sort by' ) }</label>
-				<select onChange={ this.handleSelectChange } value={ sortOrder }>
-					<option value="date-followed">{ this.props.translate( 'By Date' ) }</option>
-					<option value="alpha">{ this.props.translate( 'By Name' ) }</option>
-				</select>
-			</div>
+			<SelectDropdown
+				compact
+				className="following-manage__sort-controls"
+				options={ options }
+				initialSelected={ sortOrder }
+				onSelect={ this.handleSelectChange } />
 		);
 	}
 }
