@@ -9,8 +9,16 @@
 	./bin/codemods/named-export-from-default path-to-transform/
 */
 
+/**
+ * External dependencies
+ */
 const path = require( 'path' );
 const child_process = require( 'child_process' );
+
+/**
+ * Internal dependencies
+ */
+const config = require( './5to6-common-config' );
 
 const args = process.argv.slice( 2 );
 if ( args.length === 0 ) {
@@ -19,11 +27,14 @@ if ( args.length === 0 ) {
 }
 
 const binArgs = [
-	'-t',
-	'node_modules/5to6-codemod/transforms/named-export-generation.js',
-	'--extensions=js,jsx',
-	'--useTabs=true',
-	'--arrayBracketSpacing=true',
+	// jscodeshift options
+	'--transform=node_modules/5to6-codemod/transforms/named-export-generation.js',
+	...config.jscodeshiftArgs,
+
+	// Recast options via 5to6
+	...config.recastArgs,
+
+	// Transform target
 	args[ 0 ],
 ];
 const binPath = path.join( '.', 'node_modules', '.bin', 'jscodeshift' );
