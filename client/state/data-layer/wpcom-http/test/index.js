@@ -40,14 +40,14 @@ const getMe = {
 };
 
 describe( '#queueRequest', () => {
-	let dispatch;
-	let next;
+	const dispatch = spy();
+	const next = spy();
 
 	useNock();
 
 	beforeEach( () => {
-		dispatch = spy();
-		next = spy();
+		dispatch.reset();
+		next.reset();
 	} );
 
 	it( 'should call `onSuccess` when a response returns with data', done => {
@@ -82,24 +82,26 @@ describe( '#queueRequest', () => {
 } );
 
 describe( '#fetcherMap', () => {
-	const wpcomReq = {};
+	const wpcomReq = {
+		get: spy(),
+		post: spy(),
+	};
 	const noopCallback = () => {};
 
-	describe( 'GET', () => {
-		let getFooAction;
+	beforeEach( () => {
+		wpcomReq.get.reset();
+		wpcomReq.post.reset();
+	} );
 
-		beforeEach( () => {
-			wpcomReq.get = spy();
-			getFooAction = {
+	describe( 'GET', () => {
+		it( 'should send with query', () => {
+			const getFooAction = {
 				method: 'GET',
 				path: '/foo',
-			};
-		} );
-
-		it( 'should send with query', () => {
-			getFooAction.query = {
-				apiVersion: '2.0',
-				apiNamespace: 'wp/v2',
+				query: {
+					apiVersion: '2.0',
+					apiNamespace: 'wp/v2',
+				},
 			};
 
 			fetcherMap( 'GET', wpcomReq )( getFooAction, noopCallback );
@@ -116,19 +118,13 @@ describe( '#fetcherMap', () => {
 	} );
 
 	describe( 'POST', () => {
-		let postFooAction;
-
-		beforeEach( () => {
-			wpcomReq.post = spy();
-			postFooAction = {
+		it( 'should send formData with query', () => {
+			const postFooAction = {
 				method: 'POST',
 				path: '/foo',
+				formData: [ [ 'foo', 'bar' ], ],
+				query: { apiVersion: '1.1' },
 			};
-		} );
-
-		it( 'should send formData with query', () => {
-			postFooAction.formData = [ [ 'foo', 'bar' ], ];
-			postFooAction.query = { apiVersion: '1.1' };
 
 			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
 
@@ -146,8 +142,12 @@ describe( '#fetcherMap', () => {
 		} );
 
 		it( 'it should prioritize formData over body', () => {
-			postFooAction.formData = [ [ 'foo', 'bar' ], ];
-			postFooAction.body = { lorem: 'ipsum' };
+			const postFooAction = {
+				method: 'POST',
+				path: '/foo',
+				formData: [ [ 'foo', 'bar' ], ],
+				body: { lorem: 'ipsum' },
+			};
 
 			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
 
@@ -163,7 +163,11 @@ describe( '#fetcherMap', () => {
 		} );
 
 		it( 'should send body in the absence of any formData', () => {
-			postFooAction.body = { lorem: 'ipsum' };
+			const postFooAction = {
+				method: 'POST',
+				path: '/foo',
+				body: { lorem: 'ipsum' },
+			};
 
 			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
 
