@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { expect } from 'chai';
+import { noop } from 'lodash';
 import { spy } from 'sinon';
 
 /**
@@ -86,7 +87,6 @@ describe( '#fetcherMap', () => {
 		get: spy(),
 		post: spy(),
 	};
-	const noopCallback = () => {};
 
 	beforeEach( () => {
 		wpcomReq.get.reset();
@@ -104,7 +104,7 @@ describe( '#fetcherMap', () => {
 				},
 			};
 
-			fetcherMap( 'GET', wpcomReq )( getFooAction, noopCallback );
+			fetcherMap( 'GET', wpcomReq )( getFooAction, noop );
 
 			expect( wpcomReq.get ).to.have.been.calledWith(
 				{ path: '/foo' },
@@ -112,7 +112,7 @@ describe( '#fetcherMap', () => {
 					apiVersion: '2.0',
 					apiNamespace: 'wp/v2',
 				},
-				noopCallback
+				noop
 			);
 		} );
 	} );
@@ -126,7 +126,7 @@ describe( '#fetcherMap', () => {
 				query: { apiVersion: '1.1' },
 			};
 
-			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
+			fetcherMap( 'POST', wpcomReq )( postFooAction, noop );
 
 			expect( wpcomReq.post ).to.have.been.calledWith(
 				{
@@ -137,7 +137,7 @@ describe( '#fetcherMap', () => {
 					apiVersion: '1.1',
 				},
 				null,
-				noopCallback
+				noop
 			);
 		} );
 
@@ -149,7 +149,7 @@ describe( '#fetcherMap', () => {
 				body: { lorem: 'ipsum' },
 			};
 
-			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
+			fetcherMap( 'POST', wpcomReq )( postFooAction, noop );
 
 			expect( wpcomReq.post ).to.have.been.calledWith(
 				{
@@ -158,7 +158,7 @@ describe( '#fetcherMap', () => {
 				},
 				{ },
 				null,
-				noopCallback
+				noop
 			);
 		} );
 
@@ -169,13 +169,13 @@ describe( '#fetcherMap', () => {
 				body: { lorem: 'ipsum' },
 			};
 
-			fetcherMap( 'POST', wpcomReq )( postFooAction, noopCallback );
+			fetcherMap( 'POST', wpcomReq )( postFooAction, noop );
 
 			expect( wpcomReq.post ).to.have.been.calledWith(
 				{ path: '/foo' },
 				{ },
 				{ lorem: 'ipsum' },
-				noopCallback
+				noop
 			);
 		} );
 	} );
