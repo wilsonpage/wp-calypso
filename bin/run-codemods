@@ -83,7 +83,7 @@ const questions = [
 		}
 	},
 	{
-		'default': false,
+		'default': true,
 		message: `Transform ${ chalk.blue( pathToTransform ) } with the selected codemods?`,
 		name: 'confirm',
 		type: 'confirm',
