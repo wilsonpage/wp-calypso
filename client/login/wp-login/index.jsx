@@ -97,12 +97,12 @@ class Login extends React.Component {
 			return <a href="#" onClick={ this.onClickEnterPasswordInstead }>{ translate( 'Enter a password instead' ) }</a>;
 		}
 
-		const showMagicLoginLink = magicLoginEnabled && ! magicLoginView &&
+    const goBackLink = ! magicLoginView &&
+			<a href="#" onClick={ this.goBack }><Gridicon icon="arrow-left" size={ 18 } /> { this.props.translate( 'Return' ) }</a>;
+    const showMagicLoginLink = magicLoginEnabled && ! magicLoginView &&
 			<a href="#" onClick={ this.onMagicLoginRequestClick }>{ translate( 'Email me a login link' ) }</a>;
 		const resetPasswordLink = ! magicLoginView &&
 			<a href={ config( 'login_url' ) + '?action=lostpassword' }>{ this.props.translate( 'Lost your password?' ) }</a>;
-		const goBackLink = ! magicLoginView &&
-			<a href="#" onClick={ this.goBack }><Gridicon icon="arrow-left" size={ 18 } /> { this.props.translate( 'Return' ) }</a>;
 
 		return compact( [
 			showMagicLoginLink,
