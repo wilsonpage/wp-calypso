@@ -1,4 +1,4 @@
-.following-manage__search-new {
+.following-manage .search {
 	margin: 0;
 }
 
@@ -14,10 +14,14 @@
 
 .following-manage__subscriptions-controls {
 	display: flex;
-	padding-bottom: 20px;
 
-	.reader-import-button, .reader-export-button, .following-manage__search-followed {
-		margin-right: 10px;
+	.reader-import-button,
+	.reader-export-button {
+		margin: 4px 15px 0 0;
+	}
+
+	.select-dropdown.is-compact {
+		height: auto;
 	}
 }
 
