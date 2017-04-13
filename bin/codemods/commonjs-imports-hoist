@@ -18,6 +18,7 @@ const child_process = require( 'child_process' );
  * Internal dependencies
  */
 const config = require( './5to6-common-config' );
+const helpers = require( './helpers' );
 
 const args = process.argv.slice( 2 );
 if ( args.length === 0 ) {
@@ -41,11 +42,4 @@ const binArgs = [
 ];
 const binPath = path.join( '.', 'node_modules', '.bin', 'jscodeshift' );
 const jscodeshift = child_process.spawn( binPath, binArgs );
-
-jscodeshift.stdout.on( 'data', ( data ) => {
-	process.stdout.write( data );
-} );
-
-jscodeshift.stderr.on( 'data', ( data ) => {
-	process.stderr.write( data );
-} );
+helpers.bindEvents( jscodeshift );
