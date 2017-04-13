@@ -15,15 +15,12 @@ const mergeMapPropsToActions = ( needs, state, ownProps ) =>
 		[]
 	);
 
-const mergeMapStateToProps = ( needs, state, ownProps ) => {
-	const props = reduce(
+const mergeMapStateToProps = ( needs, state, ownProps ) =>
+	reduce(
 		map( needs, 'mapStateToProps' ),
 		( accum, mapStateToProps ) => merge( accum, mapStateToProps( state, ownProps ) ),
 		{},
 	);
-	console.error( props );
-	return props;
-}
 
 export default ( ...needs ) => Component => {
 	class EnhancedComponent extends React.Component {
