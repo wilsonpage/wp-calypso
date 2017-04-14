@@ -28,7 +28,9 @@ import {
 import Spinner from 'components/spinner';
 import {
 	receiveGravatarImageFailed,
-	uploadGravatar
+	uploadGravatar,
+	clickButton,
+	receiveImage,
 } from 'state/current-user/gravatar-status/actions';
 import ImageEditor from 'blocks/image-editor';
 import InfoPopover from 'components/info-popover';
@@ -63,11 +65,14 @@ export class EditGravatar extends Component {
 	onReceiveFile = ( files ) => {
 		const {
 			receiveGravatarImageFailed: receiveGravatarImageFailedAction,
-			translate
+			translate,
+			receiveImage: receiveImageAction,
 		} = this.props;
 		const extension = path.extname( files[ 0 ].name )
 			.toLowerCase()
 			.substring( 1 );
+
+		receiveImageAction();
 
 		if ( ALLOWED_FILE_EXTENSIONS.indexOf( extension ) === -1 ) {
 			let errorMessage = '';
@@ -83,7 +88,10 @@ export class EditGravatar extends Component {
 				errorMessage = translate( 'An image of that filetype is not allowed' );
 			}
 
-			receiveGravatarImageFailedAction( errorMessage );
+			receiveGravatarImageFailedAction( {
+				errorMessage,
+				statName: 'bad_filetype',
+			} );
 			return;
 		}
 
@@ -105,9 +113,10 @@ export class EditGravatar extends Component {
 		this.hideImageEditor();
 
 		if ( error ) {
-			receiveGravatarImageFailedAction(
-				translate( "We couldn't save that image, please try another one" )
-			);
+			receiveGravatarImageFailedAction( {
+				errorMessage: translate( "We couldn't save that image, please try another one" ),
+				statName: 'image_editor_error',
+			} );
 			return;
 		}
 
@@ -124,9 +133,10 @@ export class EditGravatar extends Component {
 			debug( 'Got the bearerToken, sending request' );
 			uploadGravatarAction( imageBlob, bearerToken, user.email );
 		} else {
-			receiveGravatarImageFailedAction(
-				translate( "We can't save a new Gravatar now. Please try again later." )
-			);
+			receiveGravatarImageFailedAction( {
+				errorMessage: translate( "We can't save a new Gravatar now. Please try again later." ),
+				statName: 'no_bearer_token',
+			} );
 		}
 	};
 
@@ -173,9 +183,12 @@ export class EditGravatar extends Component {
 	}
 
 	handleClick = () => {
+		this.props.clickButton( { isVerified: this.props.user.email_verified } );
+
 		if ( this.props.user.email_verified ) {
 			return;
 		}
+
 		this.setState( () => ( {
 			showEmailVerificationNotice: true
 		} ) );
@@ -281,6 +294,8 @@ export default connect(
 	{
 		resetAllImageEditorState,
 		receiveGravatarImageFailed,
-		uploadGravatar
+		uploadGravatar,
+		clickButton,
+		receiveImage,
 	}
 )( localize( EditGravatar ) );

@@ -94,12 +94,16 @@ describe( 'actions', () => {
 	} );
 
 	describe( '#receiveGravatarImageFailed', () => {
-		it( 'returns image receive failure action with error message', () => {
-			const error = 'error';
-			const result = receiveGravatarImageFailed( error );
-			expect( result ).to.eql( {
+		it( 'dispatches image receive failure action with error message', () => {
+			const errorMessage = 'error';
+			const statName = 'statName';
+			receiveGravatarImageFailed( {
+				errorMessage,
+				statName
+			} )( spy );
+			expect( spy ).to.have.been.calledWith( {
 				type: GRAVATAR_RECEIVE_IMAGE_FAILURE,
-				errorMessage: error
+				errorMessage
 			} );
 		} );
 	} );
