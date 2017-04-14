@@ -5,6 +5,7 @@ import Debug from 'debug';
 import isEmpty from 'lodash/isEmpty';
 import get from 'lodash/get';
 import i18n from 'i18n-calypso';
+import cookie from 'cookie';
 
 /**
  * Internal dependencies
@@ -115,6 +116,15 @@ export function acceptInvite( invite, callback ) {
 				}
 				if ( typeof callback === 'function' ) {
 					callback( error, data );
+				}
+
+				if ( data && data.redirect ) {
+					const cookieOptions = {
+						maxAge: 300,
+						path: '/',
+					};
+					document.cookie = cookie.serialize( 'jetpack_sso_approved', invite.blog_id, cookieOptions );
+					window.location = data.redirect;
 				}
 			}
 		);
