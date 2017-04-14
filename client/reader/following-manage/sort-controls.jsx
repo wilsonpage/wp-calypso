@@ -28,7 +28,6 @@ class FollowingManageSortControls extends React.Component {
 	render() {
 		const sortOrder = this.props.sortOrder;
 		const options = [
-			{ label: 'Sort order', value: 'sort-order', isLabel: true },
 			{ value: 'date-followed', label: 'Sort by date' },
 			{ value: 'alpha', label: 'Sort by name' },
 		];
