@@ -164,6 +164,7 @@ export class EditGravatar extends Component {
 						media={ { src: this.state.image } }
 						onDone={ this.onImageEditorDone }
 						onCancel={ this.hideImageEditor }
+						doneButtonText={ this.props.translate( 'Change My Photo' ) }
 					/>
 				</Dialog>
 			);
