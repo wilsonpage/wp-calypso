@@ -11,8 +11,7 @@ import Card from 'components/card';
 import FormLabel from 'components/forms/form-label';
 import FormTextArea from 'components/forms/form-textarea';
 import FormTextInput from 'components/forms/form-text-input';
-import FoldableCard from 'components/foldable-card';
-import ProductVariationTypesForm from './product-variation-types-form';
+import ProductFormVariationCard from './product-form-variation-card';
 import FormToggle from 'components/forms/form-toggle';
 
 export default class ProductForm extends Component {
@@ -30,20 +29,9 @@ export default class ProductForm extends Component {
 	constructor( props ) {
 		super( props );
 
-		this.state = {
-			isVariation: props.product && 'variable' === props.product.type ? true : false,
-		};
-
-		this.handleToggle = this.handleToggle.bind( this );
 		this.setName = this.setName.bind( this );
 		this.setDescription = this.setDescription.bind( this );
 		this.toggleFeatured = this.toggleFeatured.bind( this );
-	}
-
-	handleToggle() {
-		this.setState( ( prevState ) => ( {
-			isVariation: ! prevState.isVariation,
-		} ) );
 	}
 
 	setName( e ) {
@@ -64,14 +52,6 @@ export default class ProductForm extends Component {
 	render() {
 		const { product } = this.props;
 		const __ = i18n.translate;
-
-		const variationToggleDescription = i18n.translate(
-			'%(productName)s has variations, for example size and color.', {
-				args: {
-					productName: product && product.name || i18n.translate( 'This product' )
-				}
-			}
-		);
 
 		return (
 			<div>
@@ -109,19 +89,11 @@ export default class ProductForm extends Component {
 					</div>
 				</Card>
 
-				<FoldableCard
-					icon=""
-					expanded={ true }
-					className="product-variations"
-					header={ ( <FormToggle onChange={ this.handleToggle } checked={ this.state.isVariation }>
-					{variationToggleDescription}
-					</FormToggle>
-					) }
-				>
-					{ this.state.isVariation && (
-						<ProductVariationTypesForm />
-					) }
-				</FoldableCard>
+				<ProductFormVariationCard
+					product={ product }
+					editProduct={ this.props.editProduct }
+					editProductAttribute={ this.props.editProductAttribute }
+				/>
 			</div>
 		);
 	}
