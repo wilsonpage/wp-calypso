@@ -17,7 +17,7 @@ const child_process = require( 'child_process' );
 /**
  * Internal dependencies
  */
-const config = require( './5to6-common-config' );
+const config = require( './config' );
 const helpers = require( './helpers' );
 
 const args = process.argv.slice( 2 );
