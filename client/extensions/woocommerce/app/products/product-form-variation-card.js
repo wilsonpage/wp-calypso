@@ -26,17 +26,13 @@ export default class ProductFormVariationCard extends Component {
 	constructor( props ) {
 		super( props );
 
-		this.state = {
-			isVariation: props.product && 'variable' === props.product.type ? true : false,
-		};
-
 		this.handleToggle = this.handleToggle.bind( this );
 	}
 
 	handleToggle() {
-		this.setState( ( prevState ) => ( {
-			isVariation: ! prevState.isVariation,
-		} ) );
+		const { product, editProduct } = this.props;
+		const type = 'variable' !== product.type ? 'variable' : 'simple';
+		editProduct( product, { type } );
 	}
 
 	render() {
@@ -54,13 +50,16 @@ export default class ProductFormVariationCard extends Component {
 				icon=""
 				expanded={ true }
 				className="product-variations"
-				header={ ( <FormToggle onChange={ this.handleToggle } checked={ this.state.isVariation }>
+				header={ ( <FormToggle onChange={ this.handleToggle } checked={ 'variable' === product.type }>
 				{variationToggleDescription}
 				</FormToggle>
 				) }
 			>
-				{ this.state.isVariation && (
-					<ProductVariationTypesForm />
+				{ 'variable' === product.type && (
+					<ProductVariationTypesForm
+						product={ product }
+						editProductAttribute={ this.props.editProductAttribute }
+					/>
 				) }
 			</FoldableCard>
 		);
