@@ -78,7 +78,7 @@ export class SiteSettingsComponent extends Component {
 			case 'security':
 				return <SiteSecurity site={ site } />;
 			case 'import':
-				return <ImportSettings site={ site } />;
+				return <ImportSettings />;
 			case 'export':
 				return <ExportSettings />;
 			case 'guidedTransfer':
