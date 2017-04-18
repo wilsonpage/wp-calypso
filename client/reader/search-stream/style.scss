@@ -1,3 +1,7 @@
+.is-reader-page .following.main.search-stream {
+	max-width: none;
+}
+
 .search-stream__intro {
 	@include breakpoint( "<660px" ) {
 		margin-left: 16px;
@@ -49,7 +53,7 @@ $reader-related-card-v2-breakpoint-small: "( max-width: 535px )";
 	@include breakpoint( ">1040px" ) {
 		display: block;
 		float: right;
-		width: 200px;
+		width: 300px;
 		margin-left: 40px;
 	}
 }

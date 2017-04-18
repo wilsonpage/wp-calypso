@@ -26,6 +26,7 @@ import { SEARCH_RESULTS } from 'reader/follow-button/follow-sources';
 
 import { requestFeedSearch } from 'state/reader/feed-searches/actions';
 import { getReaderFeedsForQuery } from 'state/selectors';
+import SubscriptionListItem from 'reader/following-manage/connected-subscription-list-item';
 
 class SearchStream extends Component {
 	static propTypes = {
@@ -219,12 +220,7 @@ class TerribleSitesResults extends React.Component {
 		return (
 			<div className="sites-results">
 				{this.props.feeds
-					? this.props.feeds.map( feed => (
-							<div key={ feed.feed_ID } className="site-result">
-								<div className="site-title"><a href={ `/read/feeds/${ feed.feed_ID }` }>{feed.title}</a></div>
-								<div className="site-url"><a href={ feed.URL } rel="noopener noreferrer" target="_blank">{feed.URL}</a></div>
-							</div>
-						) )
+					? this.props.feeds.map( feed => <SubscriptionListItem key={ feed.feed_ID } feedId={ feed.feed_ID } blogId={ feed.blogId } /> )
 					: 'no results'}
 			</div>
 		);
