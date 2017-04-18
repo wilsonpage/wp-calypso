@@ -32,6 +32,7 @@ import { getSelectedSiteId } from 'state/ui/selectors';
 import { setNextLayoutFocus, setLayoutFocus } from 'state/ui/layout-focus/actions';
 import { userCan } from 'lib/site/utils';
 import {
+	canManageSelectedOrAnySite,
 	getMenusUrl,
 	getPrimarySiteId,
 	isDomainOnlySite,
@@ -117,10 +118,10 @@ export class MySitesSidebar extends Component {
 
 	getSelectedSite() {
 		if ( size( this.props.sites ) === 1 ) {
-			return this.props.primarySite;
+			return this.props.primarySite || false;
 		}
 
-		return this.props.selectedSite;
+		return this.props.selectedSite || false;
 	}
 
 	hasJetpackSites() {
@@ -258,7 +259,7 @@ export class MySitesSidebar extends Component {
 			}
 		}
 
-		if ( ! this.props.sites.canManageSelectedOrAll() ) {
+		if ( ! this.props.canManage ) {
 			return null;
 		}
 
@@ -644,6 +645,7 @@ function mapStateToProps( state ) {
 	const singleSiteId = selectedSiteId || ( isSingleSite && getPrimarySiteId( state ) ) || null;
 
 	return {
+		canManage: canManageSelectedOrAnySite( state ),
 		currentUser,
 		customizeUrl: getCustomizerUrl( state, selectedSiteId ),
 		isDomainOnly: isDomainOnlySite( state, selectedSiteId ),
