@@ -65,6 +65,7 @@ export class MySitesSidebar extends Component {
 	};
 
 	onPreviewSite = ( event ) => {
+		analytics.ga.recordEvent( 'Sidebar', 'Clicked View Site' );
 		const site = this.getSelectedSite();
 		if ( site.is_previewable && ! event.metaKey && ! event.ctrlKey ) {
 			event.preventDefault();
