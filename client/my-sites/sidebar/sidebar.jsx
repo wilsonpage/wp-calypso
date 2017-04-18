@@ -141,6 +141,17 @@ export class MySitesSidebar extends Component {
 		);
 	}
 
+	view() {
+		const site = this.getSelectedSite();
+		return site
+			? <SidebarItem
+				icon="house"
+				link={ site.URL }
+				label={ this.props.translate( 'View Site' ) }
+				onNavigate={ this.onPreviewSite } />
+			: null;
+	}
+
 	stats() {
 		const site = this.getSelectedSite();
 
@@ -579,6 +590,7 @@ export class MySitesSidebar extends Component {
 			<div>
 				<SidebarMenu>
 					<ul>
+						{ this.view() }
 						{ this.stats() }
 						{ this.plan() }
 					</ul>
