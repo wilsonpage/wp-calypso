@@ -6,6 +6,7 @@ import { get } from 'lodash';
 /**
  * Internal dependencies
  */
+import config from 'config';
 import {
 	ANALYTICS_SUPER_PROPS_UPDATE,
 	SELECTED_SITE_SET,
@@ -15,6 +16,7 @@ import {
 } from 'state/action-types';
 import analytics from 'lib/analytics';
 import cartStore from 'lib/cart/store';
+import desktop from 'lib/desktop';
 import { getSelectedSite, getSelectedSiteId } from 'state/ui/selectors';
 import { getCurrentUser } from 'state/current-user/selectors';
 
@@ -48,6 +50,19 @@ const updateSelectedSiteForCart = ( dispatch, action, getState ) => {
 	cartStore.setSelectedSiteId( selectedSiteId );
 };
 
+/**
+ * Sets the selected site for lib/desktop
+ *
+ * @param {function} dispatch - redux dispatch function
+ * @param {object}   action   - the dispatched action
+ * @param {function} getState - redux getState function
+ */
+const updateSelectedSiteForDesktop = ( dispatch, action, getState ) => {
+	const state = getState();
+	const selectedSite = getSelectedSite( state );
+	desktop.setSelectedSite( selectedSite );
+};
+
 const handler = ( dispatch, action, getState ) => {
 	switch ( action.type ) {
 		case ANALYTICS_SUPER_PROPS_UPDATE:
@@ -60,6 +75,9 @@ const handler = ( dispatch, action, getState ) => {
 			// Wait a tick for the reducer to update the state tree
 			setTimeout( () => {
 				updateSelectedSiteForCart( dispatch, action, getState );
+				if ( config.isEnabled( 'desktop' ) ) {
+					updateSelectedSiteForDesktop( dispatch, action, getState );
+				}
 			}, 0 );
 			return;
 	}
