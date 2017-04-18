@@ -373,6 +373,7 @@ const RemovePurchase = React.createClass( {
 					onClose={ this.closeDialog }>
 					<FormSectionHeading>{ this.translate( 'Remove %(productName)s', { args: { productName } } ) }</FormSectionHeading>
 					<CancelPurchaseForm
+						productName={ productName }
 						surveyStep={ this.state.surveyStep }
 						finalStep={ this.state.finalStep }
 						showSurvey={ config.isEnabled( 'upgrades/removal-survey' ) }

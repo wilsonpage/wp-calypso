@@ -187,6 +187,7 @@ class CancelPurchaseButton extends Component {
 				className="cancel-purchase__button-warning-dialog">
 				<FormSectionHeading>{ translate( 'Cancel %(purchaseName)s', { args: { purchaseName } } ) }</FormSectionHeading>
 				<CancelPurchaseForm
+					productName={ purchaseName }
 					surveyStep={ this.state.surveyStep }
 					showSurvey={ config.isEnabled( 'upgrades/removal-survey' ) }
 					finalStep={ this.state.finalStep }
