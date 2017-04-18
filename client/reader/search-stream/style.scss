@@ -41,6 +41,36 @@ $reader-related-card-v2-breakpoint-small: "( max-width: 535px )";
 	}
 }
 
+.search-stream .sites-results {
+
+	@include breakpoint( "<1040px" ) {
+		display: none;
+	}
+	@include breakpoint( ">1040px" ) {
+		display: block;
+		float: right;
+		width: 200px;
+		margin-left: 40px;
+	}
+}
+
+.site-result {
+	margin-bottom: 1em;
+	.site-title {
+		a {
+			color: #333;
+		}
+
+	}
+	.site-url {
+		color: #999;
+		font-size: 12px;
+		a {
+			color: inherit;
+		}
+	}
+}
+
 .is-reader-page .search-stream__input-card.card {
 	box-shadow: 0 0 0 2px lighten( $gray, 20% ), 0 1px 2px lighten( $gray, 20% );
  }
