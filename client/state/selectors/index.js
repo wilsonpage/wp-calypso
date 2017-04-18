@@ -16,6 +16,7 @@
 export areAllSitesSingleUser from './are-all-sites-single-user';
 export areSitePermalinksEditable from './are-site-permalinks-editable';
 export canCurrentUser from './can-current-user';
+export canManageSelectedOrAnySite from './can-manage-selected-or-any-site';
 export countPostLikes from './count-post-likes';
 export editedPostHasContent from './edited-post-has-content';
 export eligibleForFreeToPaidUpsell from './eligible-for-free-to-paid-upsell';
@@ -64,6 +65,7 @@ export getReaderFollowForBlog from './get-reader-follow-for-blog';
 export getReaderFollows from './get-reader-follows';
 export getReaderTags from './get-reader-tags';
 export getReaderTeams from './get-reader-teams';
+export getSelectedOrAllSites from './get-selected-or-all-sites';
 export getSharingButtons from './get-sharing-buttons';
 export getSiteGmtOffset from './get-site-gmt-offset';
 export getSiteIconId from './get-site-icon-id';
