@@ -12,6 +12,7 @@ import {
 	MEDIA_DELETE,
 	SITE_FRONT_PAGE_SET_SUCCESS,
 	SITE_DELETE_RECEIVE,
+	JETPACK_DISCONNECT_RECEIVE,
 	SITE_RECEIVE,
 	SITE_REQUEST,
 	SITE_REQUEST_FAILURE,
@@ -23,7 +24,7 @@ import {
 	SITES_UPDATE,
 	SITE_SETTINGS_RECEIVE,
 	SITE_SETTINGS_UPDATE,
-	THEME_ACTIVATE_REQUEST_SUCCESS,
+	THEME_ACTIVATE_SUCCESS,
 	WORDADS_SITE_APPROVE_REQUEST_SUCCESS,
 	SERIALIZE,
 	DESERIALIZE
@@ -37,6 +38,7 @@ describe( 'reducer', () => {
 
 	it( 'should export expected reducer keys', () => {
 		expect( reducer( undefined, {} ) ).to.have.keys( [
+			'connection',
 			'domains',
 			'requestingAll',
 			'items',
@@ -203,6 +205,23 @@ describe( 'reducer', () => {
 			} );
 		} );
 
+		it( 'should remove Jetpack Disconnected sites', () => {
+			const original = deepFreeze( {
+				2916284: { ID: 2916284, name: 'Jetpack Example Blog' },
+				77203074: { ID: 77203074, name: 'Just You Wait' }
+			} );
+
+			const state = items( original, {
+				type: JETPACK_DISCONNECT_RECEIVE,
+				siteId: 2916284,
+				status: { }
+			} );
+
+			expect( state ).to.eql( {
+				77203074: { ID: 77203074, name: 'Just You Wait' }
+			} );
+		} );
+
 		it( 'should return the original state when deleting a site that is not present', () => {
 			const original = deepFreeze( {
 				2916284: { ID: 2916284, name: 'WordPress.com Example Blog' },
@@ -302,7 +321,7 @@ describe( 'reducer', () => {
 				}
 			} );
 			const state = items( original, {
-				type: THEME_ACTIVATE_REQUEST_SUCCESS,
+				type: THEME_ACTIVATE_SUCCESS,
 				siteId: 2916284,
 				themeStylesheet: 'pub/twentysixteen'
 			} );
@@ -391,6 +410,25 @@ describe( 'reducer', () => {
 				siteId: 2916284,
 				settings: {
 					site_icon: 42
+				}
+			} );
+
+			expect( state ).to.equal( original );
+		} );
+
+		it( 'should return same state if received privacy setting and matches current value', () => {
+			const original = deepFreeze( {
+				2916284: {
+					ID: 2916284,
+					name: 'WordPress.com Example Blog',
+					is_private: true
+				}
+			} );
+			const state = items( original, {
+				type: SITE_SETTINGS_RECEIVE,
+				siteId: 2916284,
+				settings: {
+					blog_public: -1
 				}
 			} );
 
@@ -487,6 +525,59 @@ describe( 'reducer', () => {
 				2916284: {
 					ID: 2916284,
 					name: 'WordPress.com Example Blog',
+					icon: {
+						media_id: 42
+					}
+				}
+			} );
+		} );
+
+		it( 'should return site with false privacy setting if received blog_public of 1', () => {
+			const original = deepFreeze( {
+				2916284: {
+					ID: 2916284,
+					name: 'WordPress.com Example Blog',
+					is_private: true
+				}
+			} );
+			const state = items( original, {
+				type: SITE_SETTINGS_RECEIVE,
+				siteId: 2916284,
+				settings: {
+					blog_public: 1
+				}
+			} );
+
+			expect( state ).to.eql( {
+				2916284: {
+					ID: 2916284,
+					name: 'WordPress.com Example Blog',
+					is_private: false
+				}
+			} );
+		} );
+
+		it( 'should update both privacy and icon if received both setting updates', () => {
+			const original = deepFreeze( {
+				2916284: {
+					ID: 2916284,
+					name: 'WordPress.com Example Blog'
+				}
+			} );
+			const state = items( original, {
+				type: SITE_SETTINGS_RECEIVE,
+				siteId: 2916284,
+				settings: {
+					blog_public: 1,
+					site_icon: 42
+				}
+			} );
+
+			expect( state ).to.eql( {
+				2916284: {
+					ID: 2916284,
+					name: 'WordPress.com Example Blog',
+					is_private: false,
 					icon: {
 						media_id: 42
 					}

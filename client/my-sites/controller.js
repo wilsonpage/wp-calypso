@@ -5,7 +5,7 @@ import page from 'page';
 import ReactDom from 'react-dom';
 import React from 'react';
 import i18n from 'i18n-calypso';
-import { uniq } from 'lodash';
+import { uniq, startsWith } from 'lodash';
 
 /**
  * Internal Dependencies
@@ -47,6 +47,7 @@ import {
 	domainManagementTransferToAnotherUser
 } from 'my-sites/upgrades/paths';
 import SitesComponent from 'my-sites/sites';
+import { isATEnabled } from 'lib/automated-transfer';
 
 /**
  * Module vars
@@ -128,11 +129,11 @@ function renderNoVisibleSites( context ) {
 }
 
 function renderSelectedSiteIsDomainOnly( reactContext, selectedSite ) {
-	const FeatureUnavailable = require( 'components/empty-content/feature-unavailable' );
+	const DomainOnly = require( 'my-sites/upgrades/domain-management/list/domain-only' );
 	const { store: reduxStore } = reactContext;
 
 	renderWithReduxStore( (
-			<FeatureUnavailable domainName={ selectedSite.slug } siteId={ selectedSite.ID } />
+			<DomainOnly domainName={ selectedSite.slug } siteId={ selectedSite.ID } hasNotice={ false } />
 		),
 		document.getElementById( 'primary' ),
 		reduxStore
@@ -167,7 +168,8 @@ function isPathAllowedForDomainOnlySite( path, domainName ) {
 		`/checkout/${ domainName }`
 	];
 
-	return [ ...domainManagementPaths, ...otherPaths ].indexOf( path ) > -1;
+	return [ ...domainManagementPaths, ...otherPaths ].indexOf( path ) > -1 ||
+		startsWith( path, '/checkout/thank-you' );
 }
 
 function onSelectedSiteAvailable( context ) {
@@ -229,6 +231,13 @@ function createSitesComponent( context ) {
 }
 
 module.exports = {
+
+	// Clears selected site from global redux state
+	noSite( context, next ) {
+		context.store.dispatch( setSelectedSiteId( null ) );
+		return next();
+	},
+
 	/*
 	 * Set up site selection based on last URL param and/or handle no-sites error cases
 	 */
@@ -334,7 +343,7 @@ module.exports = {
 		}
 	},
 
-	jetpackModuleActive( moduleIds, redirect ) {
+	jetpackModuleActive( moduleId, redirect ) {
 		return function( context, next ) {
 			const site = sites.getSelectedSite();
 
@@ -342,13 +351,11 @@ module.exports = {
 				return next();
 			}
 
-			site.verifyModulesActive( moduleIds, function( error, supported ) {
-				if ( supported || false === redirect ) {
-					next();
-				} else {
-					page.redirect( 'string' === typeof redirect ? redirect : '/stats' );
-				}
-			} );
+			if ( site.isModuleActive( moduleId ) || false === redirect ) {
+				next();
+			} else {
+				page.redirect( 'string' === typeof redirect ? redirect : '/stats' );
+			}
 		};
 	},
 
@@ -394,7 +401,7 @@ module.exports = {
 		const basePath = route.sectionify( context.path );
 		const selectedSite = sites.getSelectedSite();
 
-		if ( selectedSite && selectedSite.jetpack && ! ( config.isEnabled( 'automated-transfer' ) ) ) {
+		if ( selectedSite && selectedSite.jetpack && ! isATEnabled( selectedSite ) ) {
 			renderWithReduxStore( (
 				<Main>
 					<JetpackManageErrorPage

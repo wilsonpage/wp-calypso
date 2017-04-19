@@ -21,9 +21,13 @@ const config = require( 'config' ),
 	loadScript = require( 'lib/load-script' ).loadScript;
 
 let _superProps,
-	_user;
+	_user,
+	_selectedSite,
+	_siteCount,
+	_dispatch;
 
 import { retarget, recordAliasInFloodlight, recordPageViewInFloodlight } from 'lib/analytics/ad-tracking';
+import { ANALYTICS_SUPER_PROPS_UPDATE } from 'state/action-types';
 const mcDebug = debug( 'calypso:analytics:mc' );
 const gaDebug = debug( 'calypso:analytics:ga' );
 const tracksDebug = debug( 'calypso:analytics:tracks' );
@@ -95,6 +99,18 @@ const analytics = {
 		_superProps = superProps;
 	},
 
+	setSelectedSite: function( selectedSite ) {
+		_selectedSite = selectedSite;
+	},
+
+	setSiteCount: function( siteCount ) {
+		_siteCount = siteCount;
+	},
+
+	setDispatch: function( dispatch ) {
+		_dispatch = dispatch;
+	},
+
 	mc: {
 		bumpStat: function( group, name ) {
 			if ( 'object' === typeof group ) {
@@ -151,7 +167,11 @@ const analytics = {
 			if ( process.env.NODE_ENV !== 'production' ) {
 				for ( const key in eventProperties ) {
 					if ( isObjectLike( eventProperties[ key ] ) && typeof console !== 'undefined' ) {
-						console.error( `Unable to record event "${ eventName }" because nested properties are not supported by Tracks. Check '${ key }' on`, eventProperties ); //eslint-disable-line no-console
+						const errorMessage = (
+							`Unable to record event "${ eventName }" because nested` +
+							`properties are not supported by Tracks. Check '${ key }' on`
+						);
+						console.error( errorMessage, eventProperties ); //eslint-disable-line no-console
 
 						return;
 					}
@@ -166,7 +186,8 @@ const analytics = {
 			}
 
 			if ( _superProps ) {
-				superProperties = _superProps.getAll();
+				_dispatch && _dispatch( { type: ANALYTICS_SUPER_PROPS_UPDATE } );
+				superProperties = _superProps.getAll( _selectedSite, _siteCount );
 				eventProperties = assign( {}, eventProperties, superProperties ); // assign to a new object so we don't modify the argument
 			}
 
@@ -182,7 +203,8 @@ const analytics = {
 
 		recordPageView: function( urlPath ) {
 			let eventProperties = {
-				path: urlPath
+				path: urlPath,
+				do_not_track: '1' === navigator.doNotTrack ? 1 : 0
 			};
 
 			// Record all `utm` marketing parameters as event properties on the page view event
@@ -207,7 +229,8 @@ const analytics = {
 		},
 
 		createRandomId: function() {
-			const randomBytesLength = 9; // 9 * 4/3 = 12 - this is to avoid getting padding of a random byte string when it is base64 encoded
+			// this is to avoid getting padding of a random byte string when it is base64 encoded
+			const randomBytesLength = 9; // 9 * 4/3 = 12
 			let randomBytes;
 
 			if ( window.crypto && window.crypto.getRandomValues ) {
@@ -264,13 +287,15 @@ const analytics = {
 					featureSlug = `start_${ matched[ 1 ] }`;
 				}
 
+				const type = eventType.replace( '-', '_' );
 				const json = JSON.stringify( {
 					beacons: [
-						'calypso.' + config( 'boom_analytics_key' ) + '.' + featureSlug + '.' + eventType.replace( '-', '_' ) + ':' + duration + '|ms'
+						`calypso.${ config( 'boom_analytics_key' ) }.${ featureSlug }.${ type }:${ duration }|ms`
 					]
 				} );
 
-				new Image().src = 'https://pixel.wp.com/boom.gif?v=calypso&u=' + encodeURIComponent( pageUrl ) + '&json=' + encodeURIComponent( json );
+				const [ encodedUrl, jsonData ] = [ pageUrl, json ].map( encodeURIComponent );
+				new Image().src = `https://pixel.wp.com/boom.gif?v=calypso&u=${ encodedUrl }&json=${ jsonData }`;
 			}
 		}
 	},
@@ -344,6 +369,20 @@ const analytics = {
 		}
 	},
 
+	// Lucky Orange tracking
+	luckyOrange: {
+		addLuckyOrangeScript: function() {
+			const wa = document.createElement( 'script' );
+			const s = document.getElementsByTagName( 'script' )[ 0 ];
+
+			window.__lo_site_id = 77942;
+			wa.type = 'text/javascript';
+			wa.async = true;
+			wa.src = 'https://d10lpsik1i8c69.cloudfront.net/w.js';
+			s.parentNode.insertBefore( wa, s );
+		}
+	},
+    
 	identifyUser: function( newUserId = '', newUserName = '' ) {
 		const anonymousUserId = this.tracks.anonymousUserId();
 

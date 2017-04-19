@@ -138,6 +138,9 @@ export function iframeIsWhitelisted( iframe ) {
 		'facebook.com',
 		'embed.itunes.apple.com',
 		'nyt.com',
+		'google.com',
+		'mixcloud.com',
+		'players.brightcove.net',
 	];
 	const hostName = iframe.src && url.parse( iframe.src ).hostname;
 	const iframeSrc = hostName && hostName.toLowerCase();

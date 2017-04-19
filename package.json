@@ -11,7 +11,6 @@
   "main": "index.js",
   "dependencies": {
     "async": "0.9.0",
-    "atob": "1.1.2",
     "autoprefixer": "6.3.5",
     "autosize": "3.0.15",
     "babel-core": "6.9.1",
@@ -61,12 +60,12 @@
     "flag-icon-css": "2.3.0",
     "flux": "2.1.1",
     "fuse.js": "2.6.1",
-    "get-video-id": "2.1.0",
+    "get-video-id": "2.1.4",
     "gridicons": "1.0.0",
     "hard-source-webpack-plugin": "0.0.42",
     "he": "0.5.0",
     "html-loader": "0.4.0",
-    "i18n-calypso": "1.7.0",
+    "i18n-calypso": "1.7.1",
     "immutable": "3.7.6",
     "imports-loader": "0.6.5",
     "inherits": "2.0.1",
@@ -108,7 +107,7 @@
     "react-dom": "15.4.0",
     "react-modal": "1.6.5",
     "react-pure-render": "1.0.2",
-    "react-redux": "4.4.5",
+    "react-redux": "5.0.3",
     "react-virtualized": "8.8.1",
     "redux": "3.0.4",
     "redux-thunk": "1.0.0",
@@ -140,7 +139,7 @@
     "wpcom-xhr-request": "1.1.0"
   },
   "engines": {
-    "node": "6.9.4",
+    "node": "6.10.2",
     "npm": "3.10.10"
   },
   "scripts": {
@@ -151,10 +150,11 @@
     "test-client:watch": "nodemon -e js,jsx --exec npm run test-client",
     "test-server:watch": "nodemon -e js,jsx --exec npm run test-server",
     "test-test:watch": "nodemon -e js,jsx --exec npm run test-test",
-    "lint": "bin/run-lint",
+    "lint": "bin/run-lint .",
     "css-lint": "stylelint 'client/**/*.scss' --syntax scss"
   },
   "devDependencies": {
+    "5to6-codemod": "git://github.com/jsnmoon/5to6-codemod#v1.8.0",
     "babel-eslint": "6.1.2",
     "chai": "3.5.0",
     "chai-enzyme": "0.5.2",
@@ -167,11 +167,13 @@
     "esformatter-quotes": "1.0.3",
     "esformatter-semicolons": "1.1.1",
     "esformatter-special-bangs": "1.0.1",
+    "eslines": "0.0.13",
     "eslint": "3.8.1",
     "eslint-config-wpcalypso": "0.6.0",
     "eslint-plugin-react": "6.4.1",
     "eslint-plugin-wpcalypso": "3.0.2",
     "glob": "7.0.3",
+    "jscodeshift": "0.3.30",
     "lodash-deep": "1.5.3",
     "md5-file": "3.1.0",
     "mixedindentlint": "1.1.1",

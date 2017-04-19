@@ -2,10 +2,9 @@
  * External dependencies
  */
 import React, { Component } from 'react';
-import page from 'page';
 import classNames from 'classnames';
 import Gridicon from 'gridicons';
-import { includes, startsWith } from 'lodash';
+import { get } from 'lodash';
 
 /**
  * Internal dependencies
@@ -14,7 +13,6 @@ import wrapSettingsForm from './wrap-settings-form';
 import Card from 'components/card';
 import CompactCard from 'components/card/compact';
 import Button from 'components/button';
-import RelatedContentPreview from 'my-sites/site-settings/related-content-preview';
 import LanguageSelector from 'components/forms/language-selector';
 import DisconnectJetpackButton from 'my-sites/plugins/disconnect-jetpack/disconnect-jetpack-button';
 import SectionHeader from 'components/section-header';
@@ -25,18 +23,15 @@ import FormFieldset from 'components/forms/form-fieldset';
 import FormLegend from 'components/forms/form-legend';
 import FormLabel from 'components/forms/form-label';
 import FormRadio from 'components/forms/form-radio';
-import FormSelect from 'components/forms/form-select';
-import FormToggle from 'components/forms/form-toggle';
+import CompactFormToggle from 'components/forms/form-toggle/compact';
 import FormSettingExplanation from 'components/forms/form-setting-explanation';
 import Timezone from 'components/timezone';
 import JetpackSyncPanel from './jetpack-sync-panel';
 import SiteIconSetting from './site-icon-setting';
-import UpgradeNudge from 'my-sites/upgrade-nudge';
+import Banner from 'components/banner';
 import { isBusiness } from 'lib/products-values';
-import { FEATURE_NO_BRANDING } from 'lib/plans/constants';
+import { FEATURE_NO_BRANDING, PLAN_BUSINESS } from 'lib/plans/constants';
 import QuerySiteSettings from 'components/data/query-site-settings';
-import { phpToMomentDatetimeFormat } from 'lib/formatting';
-import ExternalLink from 'components/external-link';
 
 class SiteSettingsFormGeneral extends Component {
 	componentWillMount() {
@@ -192,10 +187,10 @@ class SiteSettingsFormGeneral extends Component {
 						disabled={ isRequestingSettings }
 						onClick={ eventTracker( 'Clicked Site Visibility Radio Button' ) } />
 					<span>{ translate( 'Public' ) }</span>
-					<FormSettingExplanation isIndented>
-						{ translate( 'Your site is visible to everyone, and it may be indexed by search engines.' ) }
-					</FormSettingExplanation>
 				</FormLabel>
+				<FormSettingExplanation isIndented>
+					{ translate( 'Your site is visible to everyone, and it may be indexed by search engines.' ) }
+				</FormSettingExplanation>
 
 				<FormLabel>
 					<FormRadio
@@ -206,152 +201,29 @@ class SiteSettingsFormGeneral extends Component {
 						disabled={ isRequestingSettings }
 						onClick={ eventTracker( 'Clicked Site Visibility Radio Button' ) } />
 					<span>{ translate( 'Hidden' ) }</span>
-					<FormSettingExplanation isIndented>
-						{ translate( 'Your site is visible to everyone, but we ask search engines to not index your site.' ) }
-					</FormSettingExplanation>
 				</FormLabel>
+				<FormSettingExplanation isIndented>
+					{ translate( 'Your site is visible to everyone, but we ask search engines to not index your site.' ) }
+				</FormSettingExplanation>
 
 				{ ! site.jetpack &&
-					<FormLabel>
-						<FormRadio
-							name="blog_public"
-							value="-1"
-							checked={ -1 === parseInt( fields.blog_public, 10 ) }
-							onChange={ handleRadio }
-							disabled={ isRequestingSettings }
-							onClick={ eventTracker( 'Clicked Site Visibility Radio Button' ) } />
-						<span>{ translate( 'Private' ) }</span>
+					<div>
+						<FormLabel>
+							<FormRadio
+								name="blog_public"
+								value="-1"
+								checked={ -1 === parseInt( fields.blog_public, 10 ) }
+								onChange={ handleRadio }
+								disabled={ isRequestingSettings }
+								onClick={ eventTracker( 'Clicked Site Visibility Radio Button' ) } />
+							<span>{ translate( 'Private' ) }</span>
+						</FormLabel>
 						<FormSettingExplanation isIndented>
 							{ translate( 'Your site is only visible to you and users you approve.' ) }
 						</FormSettingExplanation>
-					</FormLabel>
+					</div>
 				}
 
-			</FormFieldset>
-		);
-	}
-
-	handleAmpToggle = () => {
-		const { fields, submitForm, trackEvent, updateFields } = this.props;
-		updateFields( { amp_is_enabled: ! fields.amp_is_enabled }, () => {
-			submitForm();
-			trackEvent( 'Toggled AMP Toggle' );
-		} );
-	};
-
-	handleAmpCustomize = () => {
-		this.props.trackEvent( 'Clicked AMP Customize button' );
-		page( '/customize/amp/' + this.props.site.slug );
-	};
-
-	renderAmpSection() {
-		if ( this.props.site.jetpack ) {
-			return;
-		}
-
-		const {
-			fields: {
-				amp_is_supported: ampIsSupported,
-				amp_is_enabled: ampIsEnabled
-			},
-			isRequestingSettings,
-			isSavingSettings,
-			translate
-		} = this.props;
-
-		const isDisabled = isRequestingSettings || isSavingSettings;
-		const isCustomizeDisabled = isDisabled || ! ampIsEnabled;
-
-		if ( ! ampIsSupported ) {
-			return null;
-		}
-
-		return (
-			<div className="site-settings__amp">
-				<SectionHeader label={ translate( 'AMP' ) }>
-					<Button
-						compact
-						disabled={ isCustomizeDisabled }
-						onClick={ this.handleAmpCustomize }>
-						{ translate( 'Edit Design' ) }
-					</Button>
-					<FormToggle
-						checked={ ampIsEnabled }
-						onChange={ this.handleAmpToggle }
-						disabled={ isDisabled } />
-				</SectionHeader>
-				<Card className="site-settings__amp-explanation">
-					<p>
-						{ translate(
-							'Your WordPress.com site supports {{a}}Accelerated Mobile Pages (AMP){{/a}}, ' +
-							'a new Google-led initiative that dramatically improves loading speeds ' +
-							'on phones and tablets. {{a}}Learn More{{/a}}.',
-							{
-								components: {
-									a: <a
-										href="https://support.wordpress.com/google-amp-accelerated-mobile-pages/"
-										target="_blank" rel="noopener noreferrer" />
-								}
-							}
-						) }
-					</p>
-				</Card>
-			</div>
-		);
-	}
-
-	relatedPostsOptions() {
-		const { fields, handleToggle, isRequestingSettings, translate } = this.props;
-		if ( ! fields.jetpack_relatedposts_allowed ) {
-			return null;
-		}
-
-		return (
-			<FormFieldset>
-				<ul id="settings-reading-relatedposts">
-					<li>
-						<FormToggle
-							className="is-compact"
-							checked={ !! fields.jetpack_relatedposts_enabled }
-							disabled={ isRequestingSettings }
-							onChange={ handleToggle( 'jetpack_relatedposts_enabled' ) }
-						>
-							{ translate( 'Show related content after posts' ) }
-						</FormToggle>
-					</li>
-					<li>
-						<ul id="settings-reading-relatedposts-customize" className="site-settings__child-settings">
-							<li>
-								<FormToggle
-									className="is-compact"
-									checked={ !! fields.jetpack_relatedposts_show_headline }
-									disabled={ isRequestingSettings || ! fields.jetpack_relatedposts_enabled }
-									onChange={ handleToggle( 'jetpack_relatedposts_show_headline' ) }
-								>
-									{ translate(
-										'Show a "Related" header to more clearly separate the related section from posts'
-									) }
-								</FormToggle>
-							</li>
-							<li>
-								<FormToggle
-									className="is-compact"
-									checked={ !! fields.jetpack_relatedposts_show_thumbnails }
-									disabled={ isRequestingSettings || ! fields.jetpack_relatedposts_enabled }
-									onChange={ handleToggle( 'jetpack_relatedposts_show_thumbnails' ) }
-								>
-									{ translate(
-										'Use a large and visually striking layout'
-									) }
-								</FormToggle>
-							</li>
-						</ul>
-						<RelatedContentPreview
-							showHeadline={ fields.jetpack_relatedposts_show_headline }
-							showThumbnails={ fields.jetpack_relatedposts_show_thumbnails }
-						/>
-					</li>
-				</ul>
 			</FormFieldset>
 		);
 	}
@@ -380,8 +252,7 @@ class SiteSettingsFormGeneral extends Component {
 				<form>
 					<ul id="settings-jetpack">
 						<li>
-							<FormToggle
-								className="is-compact"
+							<CompactFormToggle
 								checked={ !! fields.jetpack_sync_non_public_post_stati }
 								disabled={ isRequestingSettings }
 								onChange={ handleToggle( 'jetpack_sync_non_public_post_stati' ) }
@@ -389,8 +260,8 @@ class SiteSettingsFormGeneral extends Component {
 								{ translate(
 									'Allow synchronization of Posts and Pages with non-public post statuses'
 								) }
-							</FormToggle>
-							<FormSettingExplanation>
+							</CompactFormToggle>
+							<FormSettingExplanation isIndented>
 								{ translate( '(e.g. drafts, scheduled, private, etc\u2026)' ) }
 							</FormSettingExplanation>
 						</li>
@@ -402,8 +273,9 @@ class SiteSettingsFormGeneral extends Component {
 
 	jetpackDisconnectOption() {
 		const { site, translate } = this.props;
+		const isAutomatedTransfer = get( site, 'options.is_automated_transfer', false );
 
-		if ( ! site.jetpack ) {
+		if ( ! site.jetpack || isAutomatedTransfer ) {
 			return null;
 		}
 
@@ -438,8 +310,7 @@ class SiteSettingsFormGeneral extends Component {
 				<FormLegend>{ translate( 'Holiday Snow' ) }</FormLegend>
 				<ul>
 					<li>
-						<FormToggle
-							className="is-compact"
+						<CompactFormToggle
 							checked={ !! fields.holidaysnow }
 							disabled={ isRequestingSettings }
 							onChange={ handleToggle( 'holidaysnow' ) }
@@ -447,7 +318,7 @@ class SiteSettingsFormGeneral extends Component {
 							{ translate(
 								'Show falling snow on my blog until January 4th.'
 							) }
-						</FormToggle>
+						</CompactFormToggle>
 					</li>
 				</ul>
 			</FormFieldset>
@@ -479,196 +350,6 @@ class SiteSettingsFormGeneral extends Component {
 		);
 	}
 
-	dateFormatOption() {
-		if ( ! config.isEnabled( 'manage/site-settings/date-time-format' ) ) {
-			return null;
-		}
-
-		const {
-			fields: { date_format, timezone_string },
-			handleRadio,
-			isRequestingSettings,
-			moment,
-			onChangeField,
-			translate,
-		} = this.props;
-
-		const defaultFormats = [ 'F j, Y', 'Y-m-d', 'm/d/Y', 'd/m/Y' ];
-		const isCustomFormat = ! includes( defaultFormats, date_format );
-		const today = startsWith( timezone_string, 'UTC' )
-			? moment().utcOffset( timezone_string.substring( 3 ) * 60 )
-			: moment.tz( timezone_string );
-
-		const customFieldClasses = classNames(
-			'site-settings__date-time-format-custom',
-			{ 'is-custom': isCustomFormat }
-		);
-
-		return (
-			<FormFieldset>
-				<FormLabel>
-					{ translate( 'Date Format' ) }
-				</FormLabel>
-				{ defaultFormats.map( ( format, key ) =>
-					<FormLabel key={ key }>
-						<FormRadio
-							checked={ format === date_format }
-							disabled={ isRequestingSettings }
-							name="date_format"
-							onChange={ handleRadio }
-							value={ format }
-						/>
-						<span>{ today.format( phpToMomentDatetimeFormat( format ) ) }</span>
-					</FormLabel>
-				) }
-				<FormLabel className={ customFieldClasses }>
-					<FormRadio
-						checked={ isCustomFormat }
-						disabled={ isRequestingSettings }
-						name="date_format"
-						onChange={ handleRadio }
-						value={ date_format }
-					/>
-					<span>
-						{ translate( 'Custom' ) }
-						<FormInput
-							disabled={ isRequestingSettings }
-							name="date_format_custom"
-							onChange={ onChangeField( 'date_format' ) }
-							type="text"
-							value={ date_format || '' }
-						/>
-						<span className="site-settings__date-time-format-custom-preview">
-							{ isCustomFormat && date_format
-								? today.format( phpToMomentDatetimeFormat( date_format ) )
-								: ''
-							}
-						</span>
-				</span>
-				</FormLabel>
-			</FormFieldset>
-		);
-	}
-
-	timeFormatOption() {
-		if ( ! config.isEnabled( 'manage/site-settings/date-time-format' ) ) {
-			return null;
-		}
-
-		const {
-			fields: { time_format, timezone_string },
-			handleRadio,
-			isRequestingSettings,
-			moment,
-			onChangeField,
-			translate,
-		} = this.props;
-
-		const defaultFormats = [ 'g:i a', 'g:i A', 'H:i' ];
-		const isCustomFormat = ! includes( defaultFormats, time_format );
-		const today = startsWith( timezone_string, 'UTC' )
-			? moment().utcOffset( timezone_string.substring( 3 ) * 60 )
-			: moment.tz( timezone_string );
-
-		const customFieldClasses = classNames(
-			'site-settings__date-time-format-custom',
-			{ 'is-custom': isCustomFormat }
-		);
-
-		return (
-			<FormFieldset>
-				<FormLabel>
-					{ translate( 'Time Format' ) }
-				</FormLabel>
-				{ defaultFormats.map( ( format, key ) =>
-					<FormLabel key={ key }>
-						<FormRadio
-							checked={ format === time_format }
-							disabled={ isRequestingSettings }
-							name="time_format"
-							onChange={ handleRadio }
-							value={ format }
-						/>
-						<span>{ today.format( phpToMomentDatetimeFormat( format ) ) }</span>
-					</FormLabel>
-				) }
-				<FormLabel className={ customFieldClasses }>
-					<FormRadio
-						checked={ isCustomFormat }
-						disabled={ isRequestingSettings }
-						name="time_format"
-						onChange={ handleRadio }
-						value={ time_format }
-					/>
-					<span>
-						{ translate( 'Custom' ) }
-						<FormInput
-							disabled={ isRequestingSettings }
-							name="time_format_custom"
-							onChange={ onChangeField( 'time_format' ) }
-							type="text"
-							value={ time_format || '' }
-						/>
-						<span className="site-settings__date-time-format-custom-preview">
-							{ isCustomFormat && time_format
-								? today.format( phpToMomentDatetimeFormat( time_format ) )
-								: ''
-							}
-						</span>
-					</span>
-					<FormSettingExplanation>
-						<ExternalLink href="https://codex.wordpress.org/Formatting_Date_and_Time" icon>
-							{ translate( 'Documentation on date and time formatting.' ) }
-						</ExternalLink>
-					</FormSettingExplanation>
-				</FormLabel>
-			</FormFieldset>
-		);
-	}
-
-	startOfWeekOption() {
-		if ( ! config.isEnabled( 'manage/site-settings/date-time-format' ) ) {
-			return null;
-		}
-
-		const {
-			fields: { start_of_week },
-			handleSelect,
-			isRequestingSettings,
-			translate,
-		} = this.props;
-
-		const daysOfWeek = [
-			translate( 'Sunday' ),
-			translate( 'Monday' ),
-			translate( 'Tuesday' ),
-			translate( 'Wednesday' ),
-			translate( 'Thursday' ),
-			translate( 'Friday' ),
-			translate( 'Saturday' ),
-		];
-
-		return (
-			<FormFieldset>
-				<FormLabel>
-					{ translate( 'Week Starts On' ) }
-				</FormLabel>
-				<FormSelect
-					disabled={ isRequestingSettings }
-					name="start_of_week"
-					onChange={ handleSelect }
-					value={ start_of_week || 0 }
-				>
-					{ daysOfWeek.map( ( day, index ) =>
-						<option key={ index } value={ index } >
-							{ day }
-						</option>
-					) }
-				</FormSelect>
-			</FormFieldset>
-		);
-	}
-
 	renderJetpackSyncPanel() {
 		const { site } = this.props;
 		if ( ! site.jetpack || site.versionCompare( '4.2-alpha', '<' ) ) {
@@ -689,16 +370,15 @@ class SiteSettingsFormGeneral extends Component {
 
 		return (
 			<CompactCard>
-				<FormToggle
-					className="is-compact"
+				<CompactFormToggle
 					checked={ !! fields.api_cache }
 					disabled={ isRequestingSettings }
 					onChange={ handleToggle( 'api_cache' ) }
 				>
 					{ translate(
 						'Use synchronized data to boost performance'
-					) }
-				</FormToggle>
+					) } (a8c-only experimental feature)
+				</CompactFormToggle>
 			</CompactCard>
 		);
 	}
@@ -717,7 +397,13 @@ class SiteSettingsFormGeneral extends Component {
 	}
 
 	render() {
-		const { handleSubmitForm, isRequestingSettings, isSavingSettings, site, translate } = this.props;
+		const {
+			handleSubmitForm,
+			isRequestingSettings,
+			isSavingSettings,
+			site,
+			translate
+		} = this.props;
 		if ( site.jetpack && ! site.hasMinimumJetpackVersion ) {
 			return this.jetpackDisconnectOption();
 		}
@@ -749,9 +435,6 @@ class SiteSettingsFormGeneral extends Component {
 						{ this.blogAddress() }
 						{ this.languageOptions() }
 						{ this.Timezone() }
-						{ this.dateFormatOption() }
-						{ this.timeFormatOption() }
-						{ this.startOfWeekOption() }
 						{ this.holidaySnowOption() }
 					</form>
 				</Card>
@@ -776,8 +459,6 @@ class SiteSettingsFormGeneral extends Component {
 					</form>
 				</Card>
 
-				{ this.renderAmpSection() }
-
 				{
 					! site.jetpack && <div className="site-settings__footer-credit-container">
 						<SectionHeader label={ translate( 'Footer Credit' ) } />
@@ -791,34 +472,17 @@ class SiteSettingsFormGeneral extends Component {
 								</Button>
 							</div>
 						</CompactCard>
-						{ ! isBusiness( site.plan ) && <UpgradeNudge
-							className="site-settings__footer-credit-nudge"
-							feature={ FEATURE_NO_BRANDING }
-							title={ translate( 'Remove the footer credit entirely with WordPress.com Business' ) }
-							message={ translate( 'Upgrade to remove the footer credit, add Google Analytics and more' ) }
-							icon="customize"
-						/> }
+						{
+							! isBusiness( site.plan ) &&
+							<Banner
+								feature={ FEATURE_NO_BRANDING }
+								plan={ PLAN_BUSINESS }
+								title={ translate( 'Remove the footer credit entirely with WordPress.com Business' ) }
+								description={ translate( 'Upgrade to remove the footer credit, add Google Analytics and more' ) }
+							/>
+						}
 					</div>
 				}
-				<SectionHeader label={ translate( 'Related Posts' ) }>
-					<Button
-						compact={ true }
-						onClick={ handleSubmitForm }
-						primary={ true }
-
-						type="submit"
-						disabled={ isRequestingSettings || isSavingSettings }>
-							{ isSavingSettings
-								? translate( 'Saving…' )
-								: translate( 'Save Settings' )
-							}
-					</Button>
-				</SectionHeader>
-				<Card>
-					<form>
-						{ this.relatedPostsOptions() }
-					</form>
-				</Card>
 
 				{ this.props.site.jetpack
 					? <div>
@@ -846,9 +510,6 @@ class SiteSettingsFormGeneral extends Component {
 
 						<CompactCard href={ '../security/' + site.slug }>
 							{ translate( 'View Jetpack Monitor Settings' ) }
-						</CompactCard>
-						<CompactCard href={ 'https://wordpress.com/manage/' + site.ID }>
-							{ translate( 'Migrate followers from another WordPress.com blog' ) }
 						</CompactCard>
 					</div>
 					: null }
@@ -881,19 +542,10 @@ export default wrapSettingsForm( settings => {
 		blogdescription: '',
 		lang_id: '',
 		timezone_string: '',
-		date_format: '',
-		time_format: '',
-		start_of_week: 0,
 		blog_public: '',
 		admin_url: '',
-		jetpack_relatedposts_allowed: false,
-		jetpack_relatedposts_enabled: false,
-		jetpack_relatedposts_show_headline: false,
-		jetpack_relatedposts_show_thumbnails: false,
 		jetpack_sync_non_public_post_stati: false,
 		holidaysnow: false,
-		amp_is_supported: false,
-		amp_is_enabled: false,
 		api_cache: false,
 	};
 
@@ -908,27 +560,12 @@ export default wrapSettingsForm( settings => {
 		lang_id: settings.lang_id,
 		blog_public: settings.blog_public,
 		timezone_string: settings.timezone_string,
-		date_format: settings.date_format,
-		time_format: settings.time_format,
-		start_of_week: settings.start_of_week,
-		jetpack_relatedposts_allowed: settings.jetpack_relatedposts_allowed,
 		jetpack_sync_non_public_post_stati: settings.jetpack_sync_non_public_post_stati,
-
-		amp_is_supported: settings.amp_is_supported,
-		amp_is_enabled: settings.amp_is_enabled,
 
 		holidaysnow: !! settings.holidaysnow,
 
 		api_cache: settings.api_cache,
 	};
-
-	if ( settings.jetpack_relatedposts_allowed ) {
-		Object.assign( formSettings, {
-			jetpack_relatedposts_enabled: ( settings.jetpack_relatedposts_enabled ) ? 1 : 0,
-			jetpack_relatedposts_show_headline: settings.jetpack_relatedposts_show_headline,
-			jetpack_relatedposts_show_thumbnails: settings.jetpack_relatedposts_show_thumbnails
-		} );
-	}
 
 	// handling `gmt_offset` and `timezone_string` values
 	const gmt_offset = settings.gmt_offset;

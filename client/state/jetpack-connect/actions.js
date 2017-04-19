@@ -48,7 +48,7 @@ import { JPC_PLANS_PAGE } from './constants';
  *  Local variables;
  */
 const _fetching = {};
-const calypsoEnv = config( 'env_id' ) || process.env.NODE_ENV;
+const calypsoEnv = config( 'env_id' );
 const remoteAuthPath = '/wp-admin/admin.php?page=jetpack&connect_url_redirect=true&calypso_env=' + calypsoEnv;
 const remoteInstallPath = '/wp-admin/plugin-install.php?tab=plugin-information&plugin=jetpack';
 const remoteActivatePath = '/wp-admin/plugins.php';
@@ -350,7 +350,7 @@ export default {
 				} );
 				// Update the user now that we are fully connected.
 				userFactory().fetch();
-				return wpcom.me().sites( { site_visibility: 'all' } );
+				return wpcom.me().sites( { site_visibility: 'all', include_domain_only: true } );
 			} )
 			.then( ( data ) => {
 				tracksEvent( dispatch, 'calypso_jpc_auth_sitesrefresh', {

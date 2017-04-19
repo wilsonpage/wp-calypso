@@ -197,11 +197,61 @@ function loadTrackingScripts( callback ) {
 }
 
 /**
+ * Whether we're allowed to track the current page for retargeting.
+ *
+ * We disable retargetinig on certain pages/URLs in order to protect our users' privacy.
+ *
+ * @returns {Boolean}
+ */
+function isRetargetAllowed() {
+	// If this list catches things that are not necessarily forbidden we're ok with
+	// a little bit of approximation as long as we do catch the ones that we have to.
+	// We need to be quite aggressive with how we filter candiate pages as failing
+	// to protect our users' privacy puts us in breach of our own TOS and our
+	// retargeting partners' TOS. We also see personally identifiable information in
+	// unexpected places like email addresses in users' posts URLs and titles for
+	// various (accidental or not) reasons. We also pass PII to URLs like
+	// `wordpress.com/jetpack/connect` etc.
+	const forbiddenPatterns = [
+		'@',
+		'%40',
+		'first=',
+		'last=',
+		'email=',
+		'email_address=',
+		'user_email=',
+		'address-1=',
+		'country-code=',
+		'phone=',
+		'last-name=',
+		'first-name=',
+		'wordpress.com/jetpack/connect',
+		'wordpress.com/error-report',
+	];
+
+	const href = document.location.href;
+
+	for ( const pattern of forbiddenPatterns ) {
+		if ( href.indexOf( pattern ) !== -1 ) {
+			debug( 'isRetargetAllowed(): no' );
+			return false;
+		}
+	}
+
+	debug( 'isRetargetAllowed(): yes' );
+	return true;
+}
+
+/**
  * Fire tracking events for the purposes of retargeting on all Calypso pages
  *
  * @returns {void}
  */
 function retarget() {
+	if ( ! isRetargetAllowed() ) {
+		return;
+	}
+
 	if ( ! hasStartedFetchingScripts ) {
 		return loadTrackingScripts( retarget );
 	}
@@ -240,9 +290,42 @@ function retarget() {
 }
 
 /**
+ * Fire custom facebook conversion tracking event.
+ *
+ * @param {String} name - The name of the custom event.
+ * @param {Object} properties - The custom event attributes.
+ * @returns {void}
+ */
+function trackCustomFacebookConversionEvent( name, properties ) {
+	window.fbw && window.fbq(
+		'trackCustom',
+		name,
+		properties
+	);
+}
+
+/**
+ * Fire custom adwords conversation tracking event.
+ *
+ * @param {Object} properties - The custom event attributes.
+ * @returns {void}
+ */
+function trackCustomAdWordsRemarketingEvent( properties ) {
+	window.google_trackConversion && window.google_trackConversion( {
+		google_conversion_id: GOOGLE_CONVERSION_ID,
+		google_custom_params: properties,
+		google_remarketing_only: true
+	} );
+}
+
+/**
  * A generic function that we can export and call to track plans page views with our ad partners
  */
 function retargetViewPlans() {
+	if ( ! isRetargetAllowed() ) {
+		return;
+	}
+
 	if ( ! config.isEnabled( 'ad-tracking' ) ) {
 		return;
 	}
@@ -929,12 +1012,15 @@ module.exports = {
 		nextFunction();
 	},
 
+	retargetViewPlans,
+
 	recordAliasInFloodlight,
 	recordPageViewInFloodlight,
-	retargetViewPlans,
 	recordAddToCart,
 	recordViewCheckout,
 	recordOrder,
 	recordSignupStart,
-	recordSignupCompletion
+	recordSignupCompletion,
+	trackCustomFacebookConversionEvent,
+	trackCustomAdWordsRemarketingEvent,
 };

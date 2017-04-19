@@ -75,7 +75,7 @@ export default React.createClass( {
 	render: function() {
 		const { stepContent, headerButton } = this.props;
 		const classes = classNames( 'step-wrapper', {
-			'is-wide-layout': this.props.isWideLayout
+			'is-wide-layout': this.props.isWideLayout,
 		} );
 
 		return (

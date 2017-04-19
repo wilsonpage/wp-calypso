@@ -53,10 +53,12 @@ export const sitesSchema = {
 						product_name_short: { type: 'string' },
 						free_trial: { type: 'boolean' },
 						expired: { type: 'boolean' },
-						user_is_owner: { type: 'boolean' }
+						user_is_owner: { type: 'boolean' },
+						is_free: { type: 'boolean' }
 					}
 				},
-				single_user_site: { type: 'boolean' }
+				single_user_site: { type: 'boolean' },
+				updates: { type: 'object' },
 			}
 		}
 	},

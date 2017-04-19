@@ -45,7 +45,12 @@ class PlansFeaturesMain extends Component {
 
 		const isPersonalPlanEnabled = isEnabled( 'plans/personal-plan' );
 		if ( displayJetpackPlans && intervalType === 'monthly' ) {
-			const jetpackPlans = [ PLAN_JETPACK_FREE, PLAN_JETPACK_PERSONAL_MONTHLY, PLAN_JETPACK_PREMIUM_MONTHLY, PLAN_JETPACK_BUSINESS_MONTHLY ];
+			const jetpackPlans = [
+				PLAN_JETPACK_FREE,
+				PLAN_JETPACK_PERSONAL_MONTHLY,
+				PLAN_JETPACK_PREMIUM_MONTHLY,
+				PLAN_JETPACK_BUSINESS_MONTHLY
+			];
 			if ( hideFreePlan ) {
 				jetpackPlans.shift();
 			}
@@ -121,8 +126,7 @@ class PlansFeaturesMain extends Component {
 					question={ translate( 'I signed up and paid. What’s next?' ) }
 					answer={ translate(
 						'Our premium features are powered by a few of our other plugins. After purchasing you will' +
-						' need to install the Akismet and VaultPress plugins. If you purchase a Professional' +
-						' subscription, you will also need to install the Polldaddy plugin. Just follow the guide' +
+						' need to install the Akismet and VaultPress plugins. Just follow the guide' +
 						' after you complete your purchase.'
 					) }
 				/>
@@ -228,7 +232,7 @@ class PlansFeaturesMain extends Component {
 						' by our team and represent the highest quality. The business plan even supports' +
 						' unlimited premium theme access.',
 						{
-							components: { a: <a href={ `/design/${ site.slug }` } /> }
+							components: { a: <a href={ `/themes/${ site.slug }` } /> }
 						}
 					) }
 				/>

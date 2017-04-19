@@ -1,0 +1,30 @@
+.following-manage__search-new {
+	margin: 0;
+}
+
+.following-manage .following-manage__input-card {
+	padding: 0;
+}
+
+.following-manage__subscriptions {
+	margin-top: 20px;
+	padding-top: 10px;
+	border-top: 1px solid $gray-light;
+}
+
+.following-manage__subscriptions-controls {
+	display: flex;
+	padding-bottom: 20px;
+
+	.reader-import-button, .reader-export-button, .following-manage__search-followed {
+		margin-right: 10px;
+	}
+}
+
+.following-manage__search-followed {
+	margin-left: 0;
+}
+
+.following-manage__search-followed-input {
+	min-width: 200px;
+}

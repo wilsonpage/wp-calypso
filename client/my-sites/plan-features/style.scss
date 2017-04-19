@@ -438,16 +438,17 @@ $plan-features-sidebar-width: 272px;
 	}
 }
 
-.plan_features__item-info {
+.plan-features__item-info {
 	flex: 1 0 0;
 	width: 100%;
 }
 
-.plan-features__item-title-tabs {
+.plan-features__item-title-outlined {
 	font-weight: bold;
 	display: block;
 }
 
 .plan-features__item-description {
+	display: inline-block;
 	margin-left: 10px;
-}
+ }

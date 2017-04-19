@@ -3,7 +3,7 @@
  */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { flowRight, partialRight, pick } from 'lodash';
+import { flowRight, get, pick } from 'lodash';
 
 /**
  * Internal dependencies
@@ -47,13 +47,16 @@ class SiteSettingsFormWriting extends Component {
 		const {
 			eventTracker,
 			fields,
+			handleSelect,
 			handleToggle,
+			handleAutosavingToggle,
 			isRequestingSettings,
 			isSavingSettings,
 			onChangeField,
 			setFieldValue,
 			siteId,
-			translate
+			translate,
+			updateFields,
 		} = this.props;
 
 		return (
@@ -72,6 +75,7 @@ class SiteSettingsFormWriting extends Component {
 
 				{ this.renderSectionHeader( translate( 'Composing' ) ) }
 				<Composing
+					handleSelect={ handleSelect }
 					handleToggle={ handleToggle }
 					onChangeField={ onChangeField }
 					setFieldValue={ setFieldValue }
@@ -79,6 +83,7 @@ class SiteSettingsFormWriting extends Component {
 					isSavingSettings={ isSavingSettings }
 					isRequestingSettings={ isRequestingSettings }
 					fields={ fields }
+					updateFields={ updateFields }
 				/>
 				{
 					this.props.isJetpackSite && this.props.jetpackSettingsUISupported && (
@@ -88,7 +93,7 @@ class SiteSettingsFormWriting extends Component {
 							}
 							<MediaSettings
 								siteId={ this.props.siteId }
-								handleToggle={ handleToggle }
+								handleAutosavingToggle={ handleAutosavingToggle }
 								onChangeField={ onChangeField }
 								isSavingSettings={ isSavingSettings }
 								isRequestingSettings={ isRequestingSettings }
@@ -103,7 +108,7 @@ class SiteSettingsFormWriting extends Component {
 
 							<CustomContentTypes
 								onSubmitForm={ this.props.handleSubmitForm }
-								handleToggle={ handleToggle }
+								handleAutosavingToggle={ handleAutosavingToggle }
 								isSavingSettings={ isSavingSettings }
 								isRequestingSettings={ isRequestingSettings }
 								fields={ fields }
@@ -111,7 +116,7 @@ class SiteSettingsFormWriting extends Component {
 
 							<ThemeEnhancements
 								onSubmitForm={ this.props.handleSubmitForm }
-								handleToggle={ handleToggle }
+								handleAutosavingToggle={ handleAutosavingToggle }
 								isSavingSettings={ isSavingSettings }
 								isRequestingSettings={ isRequestingSettings }
 								fields={ fields }
@@ -160,41 +165,61 @@ const connectComponent = connect(
 	{ pure: false }
 );
 
-const getFormSettings = partialRight( pick, [
-	'default_post_format',
-	'wpcom_publish_posts_with_markdown',
-	'markdown_supported',
-	'custom-content-types',
-	'jetpack_testimonial',
-	'jetpack_portfolio',
-	'infinite-scroll',
-	'infinite_scroll',
-	'infinite_scroll_google_analytics',
-	'minileven',
-	'wp_mobile_excerpt',
-	'wp_mobile_featured_images',
-	'wp_mobile_app_promos',
-	'post_by_email_address',
-	'after-the-deadline',
-	'onpublish',
-	'onupdate',
-	'guess_lang',
-	'Bias Language',
-	'Cliches',
-	'Complex Expression',
-	'Diacritical Marks',
-	'Double Negative',
-	'Hidden Verbs',
-	'Jargon Language',
-	'Passive voice',
-	'Phrases to Avoid',
-	'Redundant Expression',
-	'ignored_phrases',
-	'photon',
-	'carousel',
-	'carousel_background_color',
-	'carousel_display_exif'
-] );
+const getFormSettings = settings => {
+	const formSettings = pick( settings, [
+		'default_post_format',
+		'custom-content-types',
+		'jetpack_testimonial',
+		'jetpack_portfolio',
+		'infinite-scroll',
+		'infinite_scroll',
+		'infinite_scroll_google_analytics',
+		'minileven',
+		'wp_mobile_excerpt',
+		'wp_mobile_featured_images',
+		'wp_mobile_app_promos',
+		'post_by_email_address',
+		'after-the-deadline',
+		'onpublish',
+		'onupdate',
+		'guess_lang',
+		'Bias Language',
+		'Cliches',
+		'Complex Expression',
+		'Diacritical Marks',
+		'Double Negative',
+		'Hidden Verbs',
+		'Jargon Language',
+		'Passive voice',
+		'Phrases to Avoid',
+		'Redundant Expression',
+		'ignored_phrases',
+		'photon',
+		'carousel',
+		'carousel_background_color',
+		'carousel_display_exif',
+		'date_format',
+		'start_of_week',
+		'time_format',
+		'timezone_string',
+	] );
+
+	// handling `gmt_offset` and `timezone_string` values
+	const gmt_offset = get( settings, 'gmt_offset' );
+	const timezone_string = get( settings, 'timezone_string' );
+
+	if (
+		! timezone_string &&
+		typeof gmt_offset === 'string' &&
+		gmt_offset.length
+	) {
+		formSettings.timezone_string = 'UTC' +
+			( /\-/.test( gmt_offset ) ? '' : '+' ) +
+			gmt_offset;
+	}
+
+	return formSettings;
+};
 
 export default flowRight(
 	connectComponent,

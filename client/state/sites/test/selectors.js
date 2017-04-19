@@ -36,7 +36,6 @@ import {
 	canJetpackSiteManage,
 	canJetpackSiteUpdateFiles,
 	canJetpackSiteAutoUpdateFiles,
-	hasJetpackSiteJetpackMenus,
 	hasJetpackSiteJetpackThemes,
 	hasJetpackSiteJetpackThemesExtendedFeatures,
 	isJetpackSiteSecondaryNetworkSite,
@@ -48,6 +47,7 @@ import {
 	isJetpackSiteMainNetworkSite,
 	getSiteAdminUrl,
 	getCustomizerUrl,
+	getJetpackComputedAttributes,
 	siteSupportsJetpackSettingsUi
 } from '../selectors';
 
@@ -1654,40 +1654,6 @@ describe( 'selectors', () => {
 		} );
 	} );
 
-	describe( '#hasJetpackSiteJetpackMenus()', () => {
-		it( 'it should return `false` if jetpack version is smaller than 3.5-alpha', () => {
-			const state = createStateWithItems( {
-				[ siteId ]: {
-					ID: siteId,
-					URL: 'https://jetpacksite.me',
-					jetpack: true,
-					options: {
-						jetpack_version: '3.4'
-					}
-				}
-			} );
-
-			const hasMenus = hasJetpackSiteJetpackMenus( state, siteId );
-			expect( hasMenus ).to.equal( false );
-		} );
-
-		it( 'it should return `true` if jetpack version is greater or equal to 3.5-alpha', () => {
-			const state = createStateWithItems( {
-				[ siteId ]: {
-					ID: siteId,
-					URL: 'https://jetpacksite.me',
-					jetpack: true,
-					options: {
-						jetpack_version: '3.5'
-					}
-				}
-			} );
-
-			const hasMenus = hasJetpackSiteJetpackMenus( state, siteId );
-			expect( hasMenus ).to.equal( true );
-		} );
-	} );
-
 	describe( '#hasJetpackSiteJetpackThemes()', () => {
 		it( 'it should return `false` if jetpack version is smaller than 3.7-beta', () => {
 			const state = createStateWithItems( {
@@ -1735,7 +1701,7 @@ describe( 'selectors', () => {
 			expect( hasThemesExtendedFeatures ).to.be.null;
 		} );
 
-		it( 'it should return `false` if jetpack version is smaller than 4.4.2', () => {
+		it( 'it should return `false` if jetpack version is smaller than 4.7', () => {
 			const state = createStateWithItems( {
 				[ siteId ]: {
 					ID: siteId,
@@ -1751,14 +1717,14 @@ describe( 'selectors', () => {
 			expect( hasThemesExtendedFeatures ).to.be.false;
 		} );
 
-		it( 'it should return `true` if jetpack version is greater or equal to 4.4.2', () => {
+		it( 'it should return `true` if jetpack version is greater or equal to 4.7', () => {
 			const state = createStateWithItems( {
 				[ siteId ]: {
 					ID: siteId,
 					URL: 'https://jetpacksite.me',
 					jetpack: true,
 					options: {
-						jetpack_version: '4.4.2'
+						jetpack_version: '4.7'
 					}
 				}
 			} );
@@ -2464,6 +2430,49 @@ describe( 'selectors', () => {
 			}, 77203074 );
 
 			expect( supportsJetpackSettingsUI ).to.be.true;
+		} );
+	} );
+
+	describe( 'getJetpackComputedAttributes()', () => {
+		it( 'should return undefined attributes if a site is not Jetpack', () => {
+			const state = {
+				sites: {
+					items: {
+						77203074: {
+							ID: 77203074,
+							jetpack: false,
+						}
+					}
+				}
+			};
+
+			const noNewAttributes = getJetpackComputedAttributes( state, 77203074 );
+			expect( noNewAttributes.hasMinimumJetpackVersion ).to.equal( undefined );
+			expect( noNewAttributes.canAutoupdateFiles ).to.equal( undefined );
+			expect( noNewAttributes.canUpdateFiles ).to.equal( undefined );
+			expect( noNewAttributes.canManage ).to.equal( undefined );
+			expect( noNewAttributes.isMainNetworkSite ).to.equal( undefined );
+			expect( noNewAttributes.isSecondaryNetworkSite ).to.equal( undefined );
+		} );
+
+		it( 'should return exists for attributes if a site is Jetpack', () => {
+			const state = {
+				sites: {
+					items: {
+						77203074: {
+							ID: 77203074,
+							jetpack: true,
+						}
+					}
+				}
+			};
+			const noNewAttributes = getJetpackComputedAttributes( state, 77203074 );
+			expect( noNewAttributes.hasMinimumJetpackVersion ).to.have.property;
+			expect( noNewAttributes.canAutoupdateFiles ).to.have.property;
+			expect( noNewAttributes.canUpdateFiles ).to.have.property;
+			expect( noNewAttributes.canManage ).to.have.property;
+			expect( noNewAttributes.isMainNetworkSite ).to.have.property;
+			expect( noNewAttributes.isSecondaryNetworkSite ).to.have.property;
 		} );
 	} );
 } );

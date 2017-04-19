@@ -5,7 +5,7 @@ import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { localize } from 'i18n-calypso';
 import page from 'page';
-import { pickBy } from 'lodash';
+import { includes, pickBy } from 'lodash';
 import Gridicon from 'gridicons';
 
 /**
@@ -14,38 +14,39 @@ import Gridicon from 'gridicons';
 import Main from 'components/main';
 import Button from 'components/button';
 import ThemesSelection from './themes-selection';
-import StickyPanel from 'components/sticky-panel';
 import PageViewTracker from 'lib/analytics/page-view-tracker';
 import { addTracking, trackClick } from './helpers';
 import DocumentHead from 'components/data/document-head';
-import { getFilter, getSortedFilterTerms, stripFilters } from './theme-filters.js';
+import { prependFilterKeys, getSortedFilterTerms, stripFilters } from './theme-filters.js';
 import buildUrl from 'lib/mixins/url-search/build-url';
-import { getSiteSlug } from 'state/sites/selectors';
+import { isJetpackSite, getSiteSlug } from 'state/sites/selectors';
+import { getCurrentUserId } from 'state/current-user/selectors';
 import ThemePreview from './theme-preview';
 import config from 'config';
+import { isATEnabled } from 'lib/automated-transfer';
+import { getThemeShowcaseDescription } from 'state/selectors';
+import { recordTracksEvent } from 'state/analytics/actions';
+import { getSelectedSite } from 'state/ui/selectors';
 
 const ThemesSearchCard = config.isEnabled( 'manage/themes/magic-search' )
 	? require( './themes-magic-search-card' )
 	: require( './themes-search-card' );
 
-const themesMeta = {
-	'': {
-		title: 'WordPress Themes',
-		description: 'Beautiful, responsive, free and premium WordPress themes \
-			for your photography site, portfolio, magazine, business website, or blog.',
-		canonicalUrl: 'https://wordpress.com/design',
-	},
-	free: {
-		title: 'Free WordPress Themes',
-		description: 'Discover Free WordPress Themes on the WordPress.com Theme Showcase.',
-		canonicalUrl: 'https://wordpress.com/design/free',
-	},
-	premium: {
-		title: 'Premium WordPress Themes',
-		description: 'Discover Premium WordPress Themes on the WordPress.com Theme Showcase.',
-		canonicalUrl: 'https://wordpress.com/design/premium',
+function getThemeShowcaseTitle( tier ) {
+	const titles = {
+		'': 'WordPress Themes',
+		free: 'Free WordPress Themes',
+		premium: 'Premium WordPress Themes',
+	};
+	return titles[ tier ];
+}
+
+function getThemeShowcaseCanonicalUrl( tier ) {
+	if ( includes( [ 'free', 'premium' ], tier ) ) {
+		return 'https://wordpress.com/themes/' + tier;
 	}
-};
+	return 'https://wordpress.com/themes';
+}
 
 const optionShape = PropTypes.shape( {
 	label: PropTypes.string,
@@ -65,6 +66,7 @@ const ThemeShowcase = React.createClass( {
 		secondaryOption: optionShape,
 		getScreenshotOption: PropTypes.func,
 		siteSlug: PropTypes.string,
+		trackATUploadClick: PropTypes.func,
 	},
 
 	getDefaultProps() {
@@ -83,14 +85,6 @@ const ThemeShowcase = React.createClass( {
 		};
 	},
 
-	prependFilterKeys() {
-		const { filter } = this.props;
-		if ( filter ) {
-			return filter.split( ',' ).map( getFilter ).join( ' ' ) + ' ';
-		}
-		return '';
-	},
-
 	doSearch( searchBoxContent ) {
 		const filter = getSortedFilterTerms( searchBoxContent );
 		const searchString = stripFilters( searchBoxContent );
@@ -105,7 +99,7 @@ const ThemeShowcase = React.createClass( {
 		const tierSection = tier === 'all' ? '' : `/${ tier }`;
 		const filterSection = filter ? `/filter/${ filter }` : '';
 
-		const url = `/design${ verticalSection }${ tierSection }${ filterSection }${ siteIdSection }`;
+		const url = `/themes${ verticalSection }${ tierSection }${ filterSection }${ siteIdSection }`;
 		page( buildUrl( url, searchString ) );
 	},
 
@@ -116,39 +110,56 @@ const ThemeShowcase = React.createClass( {
 
 	onUploadClick() {
 		trackClick( 'upload theme' );
+		if ( this.props.atEnabled ) {
+			this.props.trackATUploadClick();
+		}
+	},
+
+	showUploadButton() {
+		const { isMultisite, isJetpack, isLoggedIn } = this.props;
+
+		return (
+			config.isEnabled( 'manage/themes/upload' ) &&
+			isLoggedIn &&
+			! isMultisite &&
+			( isJetpack || this.props.atEnabled )
+		);
 	},
 
 	render() {
-		const { site, options, getScreenshotOption, search, filter, translate, siteSlug, isMultisite } = this.props;
+		const {
+			siteId,
+			options,
+			getScreenshotOption,
+			search,
+			filter,
+			translate,
+			siteSlug
+		} = this.props;
 		const tier = config.isEnabled( 'upgrades/premium-themes' ) ? this.props.tier : 'free';
 
 		const metas = [
-			{ name: 'description', property: 'og:description', content: themesMeta[ tier ].description },
-			{ property: 'og:url', content: themesMeta[ tier ].canonicalUrl },
+			{ name: 'description', property: 'og:description', content: this.props.description },
+			{ property: 'og:url', content: getThemeShowcaseCanonicalUrl( tier ) },
 			{ property: 'og:type', content: 'website' }
 		];
 
 		// FIXME: Logged-in title should only be 'Themes'
 		return (
 			<Main className="themes">
-				<DocumentHead title={ themesMeta[ tier ].title } meta={ metas } />
+				<DocumentHead title={ getThemeShowcaseTitle( tier ) } meta={ metas } />
 				<PageViewTracker path={ this.props.analyticsPath } title={ this.props.analyticsPageTitle } />
-				<StickyPanel>
-					<ThemesSearchCard
-						site={ site }
-						onSearch={ this.doSearch }
-						search={ this.prependFilterKeys() + search }
-						tier={ tier }
-						select={ this.onTierSelect } />
-				</StickyPanel>
-				{ config.isEnabled( 'manage/themes/upload' ) && siteSlug && ! isMultisite &&
-					<Button className="themes__upload-button" compact icon
-						onClick={ this.onUploadClick }
-						href={ `/design/upload/${ this.props.siteSlug }` }
-					>
-						<Gridicon icon="cloud-upload" />
-						{ translate( 'Upload Theme' ) }
-					</Button>
+				<ThemesSearchCard
+					onSearch={ this.doSearch }
+					search={ prependFilterKeys( filter ) + search }
+					tier={ tier }
+					select={ this.onTierSelect } />
+				{ this.showUploadButton() && <Button className="themes__upload-button" compact icon
+					onClick={ this.onUploadClick }
+					href={ siteSlug ? `/themes/upload/${ siteSlug }` : '/themes/upload' }>
+					<Gridicon icon="cloud-upload" />
+					{ translate( 'Upload Theme' ) }
+				</Button>
 				}
 				<ThemesSelection
 					search={ search }
@@ -178,7 +189,7 @@ const ThemeShowcase = React.createClass( {
 					getOptions={ function( theme ) {
 						return pickBy(
 							addTracking( options ),
-							option => ! ( option.hideForTheme && option.hideForTheme( theme ) )
+							option => ! ( option.hideForTheme && option.hideForTheme( theme, siteId ) )
 						); } }
 					trackScrollPage={ this.props.trackScrollPage }
 					emptyContent={ this.props.emptyContent }
@@ -190,8 +201,15 @@ const ThemeShowcase = React.createClass( {
 	}
 } );
 
-export default connect(
-	( state, { siteId } ) => ( {
-		siteSlug: getSiteSlug( state, siteId ),
-	} )
-)( localize( ThemeShowcase ) );
+const mapStateToProps = ( state, { siteId, filter, tier, vertical } ) => ( {
+	atEnabled: isATEnabled( getSelectedSite( state ) ),
+	isLoggedIn: !! getCurrentUserId( state ),
+	siteSlug: getSiteSlug( state, siteId ),
+	isJetpack: isJetpackSite( state, siteId ),
+	description: getThemeShowcaseDescription( state, { filter, tier, vertical } ),
+} );
+
+const mapDispatchToProps = {
+	trackATUploadClick: () => recordTracksEvent( 'calypso_automated_transfer_click_theme_upload' )
+};
+export default connect( mapStateToProps, mapDispatchToProps )( localize( ThemeShowcase ) );

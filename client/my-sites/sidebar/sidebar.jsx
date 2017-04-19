@@ -28,13 +28,14 @@ import SidebarRegion from 'layout/sidebar/region';
 import StatsSparkline from 'blocks/stats-sparkline';
 import { isPersonal, isPremium, isBusiness } from 'lib/products-values';
 import { getCurrentUser } from 'state/current-user/selectors';
-import { getSelectedSiteId } from 'state/ui/selectors';
+import { getSelectedSiteId, getSelectedSite } from 'state/ui/selectors';
 import { setNextLayoutFocus, setLayoutFocus } from 'state/ui/layout-focus/actions';
 import { userCan } from 'lib/site/utils';
-import { isDomainOnlySite } from 'state/selectors';
+import { getMenusUrl, getPrimarySiteId, isDomainOnlySite } from 'state/selectors';
 import { getCustomizerUrl, isJetpackSite } from 'state/sites/selectors';
 import isSiteAutomatedTransfer from 'state/selectors/is-site-automated-transfer';
 import { getStatsPathForTab } from 'lib/route/path';
+import { isATEnabled } from 'lib/automated-transfer';
 
 /**
  * Module variables
@@ -131,10 +132,7 @@ export class MySitesSidebar extends Component {
 
 	publish() {
 		return (
-			<PublishMenu site={ this.getSelectedSite() }
-				sites={ this.props.sites }
-				siteSuffix={ this.siteSuffix() }
-				isSingle={ this.isSingle() }
+			<PublishMenu siteId={ this.props.singleSiteId }
 				itemLinkClass={ this.itemLinkClass }
 				onNavigate={ this.onNavigate } />
 		);
@@ -200,16 +198,16 @@ export class MySitesSidebar extends Component {
 		if ( site.jetpack && ! jetpackEnabled && site.options ) {
 			themesLink = site.options.admin_url + 'themes.php';
 		} else if ( this.isSingle() ) {
-			themesLink = '/design' + this.siteSuffix();
+			themesLink = '/themes' + this.siteSuffix();
 		} else {
-			themesLink = '/design';
+			themesLink = '/themes';
 		}
 
 		return (
 			<SidebarItem
 				label={ this.props.translate( 'Themes' ) }
 				tipTarget="themes"
-				className={ this.itemLinkClass( '/design', 'themes' ) }
+				className={ this.itemLinkClass( '/themes', 'themes' ) }
 				link={ themesLink }
 				onNavigate={ this.onNavigate }
 				icon="themes"
@@ -223,28 +221,9 @@ export class MySitesSidebar extends Component {
 	}
 
 	menus() {
-		var site = this.getSelectedSite(),
-			menusLink = '/menus' + this.siteSuffix(),
-			showClassicLink = ! config.isEnabled( 'manage/menus' );
-
-		if ( ! site ) {
+		const { menusUrl } = this.props;
+		if ( ! menusUrl ) {
 			return null;
-		}
-
-		if ( ! site.capabilities ) {
-			return null;
-		}
-
-		if ( site.capabilities && ! site.capabilities.edit_theme_options ) {
-			return null;
-		}
-
-		if ( ! this.isSingle() ) {
-			return null;
-		}
-
-		if ( showClassicLink ) {
-			menusLink = site.options.admin_url + 'nav-menus.php';
 		}
 
 		return (
@@ -252,7 +231,7 @@ export class MySitesSidebar extends Component {
 				tipTarget="menus"
 				label={ this.props.translate( 'Menus' ) }
 				className={ this.itemLinkClass( '/menus', 'menus' ) }
-				link={ menusLink }
+				link={ menusUrl }
 				onNavigate={ this.onNavigate }
 				icon="menus"
 				preloadSectionName="menus" />
@@ -264,7 +243,7 @@ export class MySitesSidebar extends Component {
 			pluginsLink = '/plugins' + this.siteSuffix(),
 			addPluginsLink;
 
-		if ( config.isEnabled( 'automated-transfer' ) ) {
+		if ( this.props.atEnabled ) {
 			addPluginsLink = '/plugins/browse' + this.siteSuffix();
 		}
 
@@ -307,10 +286,6 @@ export class MySitesSidebar extends Component {
 			domainsLink = '/domains/manage' + this.siteSuffix(),
 			addDomainLink = '/domains/add' + this.siteSuffix();
 
-		if ( ! config.isEnabled( 'manage/plans' ) ) {
-			return null;
-		}
-
 		if ( ! this.isSingle() ) {
 			return null;
 		}
@@ -323,7 +298,7 @@ export class MySitesSidebar extends Component {
 			return null;
 		}
 
-		if ( site.jetpack && ! ( config.isEnabled( 'automated-transfer' ) ) ) {
+		if ( site.jetpack && ! this.props.atEnabled ) {
 			return null;
 		}
 
@@ -333,7 +308,7 @@ export class MySitesSidebar extends Component {
 				className={ this.itemLinkClass( [ '/domains' ], 'domains' ) }
 				link={ domainsLink }
 				onNavigate={ this.onNavigate }
-				icon="globe"
+				icon="domains"
 				preloadSectionName="upgrades"
 			>
 				<SidebarButton href={ addDomainLink }>
@@ -344,10 +319,6 @@ export class MySitesSidebar extends Component {
 	}
 
 	plan() {
-		if ( ! config.isEnabled( 'manage/plans' ) ) {
-			return null;
-		}
-
 		if ( ! this.isSingle() ) {
 			return null;
 		}
@@ -426,10 +397,6 @@ export class MySitesSidebar extends Component {
 
 		if ( ! this.isSingle() ) {
 			return null;
-		}
-
-		if ( ! config.isEnabled( 'manage/sharing' ) && site.options ) {
-			sharingLink = site.options.admin_url + 'options-general.php?page=sharing';
 		}
 
 		return (
@@ -535,7 +502,7 @@ export class MySitesSidebar extends Component {
 				<a onClick={ this.trackWpadminClick } href={ site.options.admin_url } target="_blank" rel="noopener noreferrer">
 					<Gridicon icon="my-sites" size={ 24 } />
 					<span className="menu-link-text">{ this.props.translate( 'WP Admin' ) }</span>
-					<span className="noticon noticon-external" />
+					<Gridicon icon="external" size={ 24 } />
 				</a>
 			</li>
 		);
@@ -564,139 +531,6 @@ export class MySitesSidebar extends Component {
 	trackWpadminClick = () => {
 		analytics.ga.recordEvent( 'Sidebar', 'Clicked WP Admin' );
 	};
-
-	vip() {
-		var site, viplink;
-
-		if ( ! config.isEnabled( 'vip' ) ) {
-			return null;
-		}
-
-		site = this.getSelectedSite();
-		viplink = '/vip/updates' + this.siteSuffix();
-
-		if ( ! site ) {
-			return null;
-		}
-
-		return (
-			<li className={ this.itemLinkClass( '/vip/updates', 'sidebar__vip' ) } >
-				<a href={ viplink } >
-					<span className="menu-link-text">{ this.props.translate( 'Updates' ) }</span>
-				</a>
-			</li>
-		);
-	}
-
-	vipDeploys() {
-		var site, viplink;
-
-		if ( ! config.isEnabled( 'vip/deploys' ) ) {
-			return null;
-		}
-
-		site = this.getSelectedSite();
-		viplink = '/vip/deploys' + this.siteSuffix();
-
-		if ( ! site ) {
-			return null;
-		}
-
-		return (
-			<li className={ this.itemLinkClass( '/vip/deploys', 'sidebar__vip-deploys' ) } >
-				<a href={ viplink } >
-					<span className="menu-link-text">{ this.props.translate( 'Deploys' ) }</span>
-				</a>
-			</li>
-		);
-	}
-
-	vipBilling() {
-		var site, viplink;
-
-		if ( ! config.isEnabled( 'vip/billing' ) ) {
-			return null;
-		}
-
-		site = this.getSelectedSite();
-		viplink = '/vip/billing' + this.siteSuffix();
-
-		if ( ! site ) {
-			return null;
-		}
-
-		return (
-			<li className={ this.itemLinkClass( '/vip/billing', 'sidebar__vip-billing' ) }>
-				<a href={ viplink } >
-					<span className="menu-link-text">{ this.props.translate( 'Billing' ) }</span>
-				</a>
-			</li>
-		);
-	}
-
-	vipSupport() {
-		var viplink;
-
-		if ( ! config.isEnabled( 'vip/support' ) ) {
-			return null;
-		}
-
-		viplink = '/vip/support' + this.siteSuffix();
-
-		return (
-			<li className={ this.itemLinkClass( '/vip/support', 'sidebar__vip-support' ) }>
-				<a href={ viplink } >
-					<span className="menu-link-text">{ this.props.translate( 'Support' ) }</span>
-				</a>
-			</li>
-		);
-	}
-
-	vipBackups() {
-		var site, viplink;
-
-		if ( ! config.isEnabled( 'vip/backups' ) ) {
-			return null;
-		}
-
-		site = this.getSelectedSite();
-		viplink = '/vip/backups' + this.siteSuffix();
-
-		if ( ! site ) {
-			return null;
-		}
-
-		return (
-			<li className={ this.itemLinkClass( '/vip/backups', 'sidebar__vip-backups' ) }>
-				<a href={ viplink } >
-					<span className="menu-link-text">{ this.props.translate( 'Backups' ) }</span>
-				</a>
-			</li>
-		);
-	}
-
-	vipLogs() {
-		var site, viplink;
-
-		if ( ! config.isEnabled( 'vip/logs' ) ) {
-			return null;
-		}
-
-		site = this.getSelectedSite();
-		viplink = '/vip/logs' + this.siteSuffix();
-
-		if ( ! site ) {
-			return null;
-		}
-
-		return (
-			<li className={ this.itemLinkClass( '/vip/logs', 'sidebar__vip-logs' ) }>
-				<a href={ viplink } >
-					<span className="menu-link-text">{ this.props.translate( 'Logs' ) }</span>
-				</a>
-			</li>
-		);
-	}
 
 	focusContent = () => {
 		this.props.setLayoutFocus( 'content' );
@@ -736,8 +570,7 @@ export class MySitesSidebar extends Component {
 
 		const publish = !! this.publish(),
 			appearance = ( !! this.themes() || !! this.menus() ),
-			configuration = ( !! this.sharing() || !! this.users() || !! this.siteSettings() || !! this.plugins() || !! this.upgrades() ),
-			vip = !! this.vip();
+			configuration = ( !! this.sharing() || !! this.users() || !! this.siteSettings() || !! this.plugins() || !! this.upgrades() );
 
 		return (
 			<div>
@@ -747,21 +580,6 @@ export class MySitesSidebar extends Component {
 						{ this.plan() }
 					</ul>
 				</SidebarMenu>
-
-				{ vip
-					? <SidebarMenu>
-						<SidebarHeading>VIP</SidebarHeading>
-						<ul>
-							{ this.vip() }
-							{ this.vipDeploys() }
-							{ this.vipBilling() }
-							{ this.vipSupport() }
-							{ this.vipBackups() }
-							{ this.vipLogs() }
-						</ul>
-					</SidebarMenu>
-					: null
-				}
 
 				{ publish
 					? <SidebarMenu>
@@ -807,7 +625,6 @@ export class MySitesSidebar extends Component {
 				<SidebarRegion>
 					<CurrentSite
 						sites={ this.props.sites }
-						siteCount={ this.props.currentUser.visible_site_count }
 						onClick={ this.onPreviewSite }
 					/>
 					{ this.renderSidebarMenus() }
@@ -821,13 +638,21 @@ export class MySitesSidebar extends Component {
 }
 
 function mapStateToProps( state ) {
+	const currentUser = getCurrentUser( state );
 	const selectedSiteId = getSelectedSiteId( state );
+	const isSingleSite = !! selectedSiteId || currentUser.site_count === 1;
+	const singleSiteId = selectedSiteId || ( isSingleSite && getPrimarySiteId( state ) ) || null;
+	const selectedSite = getSelectedSite( state );
+
 	return {
-		currentUser: getCurrentUser( state ),
+		currentUser,
+		atEnabled: isATEnabled( selectedSite ),
 		customizeUrl: getCustomizerUrl( state, selectedSiteId ),
 		isDomainOnly: isDomainOnlySite( state, selectedSiteId ),
 		isJetpack: isJetpackSite( state, selectedSiteId ),
 		isSiteAutomatedTransfer: !! isSiteAutomatedTransfer( state, selectedSiteId ),
+		menusUrl: getMenusUrl( state, singleSiteId ),
+		singleSiteId
 	};
 }
 

@@ -19,7 +19,10 @@ import {
 } from 'state/selectors';
 import { recordTracksEvent } from 'state/analytics/actions';
 import QuerySitePlans from 'components/data/query-site-plans';
-import { isFinished as isJetpackPluginsFinished } from 'state/plugins/premium/selectors';
+import {
+	isStarted as isJetpackPluginsStarted,
+	isFinished as isJetpackPluginsFinished
+} from 'state/plugins/premium/selectors';
 import TrackComponentView from 'lib/analytics/track-component-view';
 
 const SiteNotice = React.createClass( {
@@ -82,8 +85,8 @@ const SiteNotice = React.createClass( {
 		if ( ! this.props.eligibleForFreeToPaidUpsell ) {
 			return null;
 		}
-		const eventName = 'calypso_free_to_paid_plan_nudge_impression';
-		const eventProperties = { cta_name: 'current_site_free_to_paid_plan_nudge_notice' };
+		const eventName = 'calypso_upgrade_nudge_impression';
+		const eventProperties = { cta_name: 'free-to-paid-sidebar' };
 		return (
 			<Notice isCompact status="is-success" icon="info-outline">
 				{ this.translate( 'Free domain with a plan' ) }
@@ -92,7 +95,7 @@ const SiteNotice = React.createClass( {
 					href={ `/plans/my-plan/${ this.props.site.slug }` }
 				>
 					{ this.translate( 'Upgrade' ) }
-					<TrackComponentView event Name={ eventName } eventProperties={ eventProperties } />
+					<TrackComponentView eventName={ eventName } eventProperties={ eventProperties } />
 				</NoticeAction>
 			</Notice>
 		);
@@ -139,7 +142,7 @@ export default connect( ( state, ownProps ) => {
 		eligibleForFreeToPaidUpsell: eligibleForFreeToPaidUpsell( state, siteId, i18n.moment() ),
 		hasDomainCredit: hasDomainCredit( state, siteId ),
 		canManageOptions: canCurrentUser( state, siteId, 'manage_options' ),
-		pausedJetpackPluginsSetup: ! isJetpackPluginsFinished( state, siteId )
+		pausedJetpackPluginsSetup: isJetpackPluginsStarted( state, siteId ) && ! isJetpackPluginsFinished( state, siteId )
 	};
 }, ( dispatch ) => {
 	return {
@@ -149,8 +152,8 @@ export default connect( ( state, ownProps ) => {
 			}
 		) ),
 		clickFreeToPaidPlanNotice: () => dispatch( recordTracksEvent(
-			'calypso_free_to_paid_plan_nudge_click', {
-				cta_name: 'current_site_free_to_paid_plan_nudge_notice'
+			'calypso_upgrade_nudge_cta_click', {
+				cta_name: 'free-to-paid-sidebar'
 			}
 		) ),
 	};

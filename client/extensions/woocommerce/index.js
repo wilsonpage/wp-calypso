@@ -1,31 +1,52 @@
 /**
  * External dependencies
  */
-import page from 'page';
 import React from 'react';
+import page from 'page';
+import config from 'config';
 
 /**
  * Internal dependencies
  */
 import { navigation, siteSelection } from 'my-sites/controller';
 import { renderWithReduxStore } from 'lib/react-helpers';
-import Main from 'components/main';
-import Card from 'components/card';
-import SectionHeader from 'components/section-header';
+import ProductForm from './app/products/product-form';
+import Dashboard from './app/dashboard';
+import Stats from './app/stats';
 
-const render = ( context ) => {
-	renderWithReduxStore( (
-		<Main className="woocommerce__main">
-			<SectionHeader label="WooCommerce" />
-			<Card>
-				<p>This is the starting point of something great!</p>
-				<p>This will be the home for your WooCommerce integration with WordPress.com.</p>
-			</Card>
-		</Main>
-	), document.getElementById( 'primary' ), context.store );
+const Controller = {
+	dashboard: function( context ) {
+		renderWithReduxStore(
+			React.createElement( Dashboard, { } ),
+			document.getElementById( 'primary' ),
+			context.store
+		);
+	},
+
+	addProduct: function( context ) {
+		renderWithReduxStore(
+			React.createElement( ProductForm, { } ),
+			document.getElementById( 'primary' ),
+			context.store
+		);
+	},
+
+	stats: function( context ) {
+		renderWithReduxStore(
+			React.createElement( Stats, { } ),
+			document.getElementById( 'primary' ),
+			context.store
+		);
+	}
 };
 
 export default function() {
-	page( '/woocommerce/:site?', siteSelection, navigation, render );
-}
+	if ( config.isEnabled( 'woocommerce/extension-dashboard' ) ) {
+		page( '/store/:site?', siteSelection, navigation, Controller.dashboard );
+		page( '/store/products/add/:site?', siteSelection, navigation, Controller.addProduct );
+	}
 
+	if ( config.isEnabled( 'woocommerce/extension-stats' ) ) {
+		page( '/store/stats/:site?', siteSelection, navigation, Controller.stats );
+	}
+}
