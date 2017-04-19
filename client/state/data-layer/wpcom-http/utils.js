@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { get } from 'lodash';
+import { get, noop } from 'lodash';
 
 /**
  * Returns response data from an HTTP request success action if available
@@ -43,10 +43,13 @@ export const getProgress = action => get( action, 'meta.dataLayer.progress', nul
  * response data and errors to a meta property on the given success
  * error, and progress handling actions.
  *
- * This function accepts three functions as the initiator, success,
- * and error handlers for actions and it will call the appropriate
- * one based on the stored meta. It accepts an optional fourth
- * function which will be called for progress events on upload.
+ * This function accepts four functions as the initiator, success,
+ * error and progress handlers for actions and it will call the appropriate
+ * one based on the stored meta. All these function parameters are optional except
+ * the initiator -- they default to 'noop'.
+ *
+ * The 'onProgress' function will be called for progress events on POST or any other
+ * upload request that has a body.
  *
  * If both error and response data is available this will call the
  * error handler in preference over the success handler, but the
@@ -59,12 +62,12 @@ export const getProgress = action => get( action, 'meta.dataLayer.progress', nul
  *   onProgress :: ReduxStore -> Action -> Dispatcher -> ProgressData
  *
  * @param {Function} initiator called if action lacks response meta; should create HTTP request
- * @param {Function} onSuccess called if the action meta includes response data
- * @param {Function} onError called if the action meta includes error data
+ * @param {Function} [onSuccess] called if the action meta includes response data
+ * @param {Function} [onError] called if the action meta includes error data
  * @param {Function} [onProgress] called on progress events when uploading
  * @returns {?*} please ignore return values, they are undefined
  */
-export const dispatchRequest = ( initiator, onSuccess, onError, onProgress = null ) => ( store, action, next ) => {
+export const dispatchRequest = ( initiator, onSuccess = noop, onError = noop, onProgress = noop ) => ( store, action, next ) => {
 	const error = getError( action );
 	if ( error ) {
 		return onError( store, action, next, error );
