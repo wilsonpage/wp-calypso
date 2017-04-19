@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { isEmpty, keys, merge, noop } from 'lodash';
+import { isEmpty, keys, merge } from 'lodash';
 
 /**
  * Internal dependencies
@@ -86,6 +86,6 @@ export const finishUserSettingsSave = ( { dispatch }, { settingsOverride }, next
 };
 
 export default {
-	[ USER_SETTINGS_REQUEST ]: [ dispatchRequest( requestUserSettings, storeFetchedUserSettings, noop ) ],
-	[ USER_SETTINGS_SAVE ]: [ dispatchRequest( saveUserSettings, finishUserSettingsSave, noop ) ],
+	[ USER_SETTINGS_REQUEST ]: [ dispatchRequest( requestUserSettings, storeFetchedUserSettings ) ],
+	[ USER_SETTINGS_SAVE ]: [ dispatchRequest( saveUserSettings, finishUserSettingsSave ) ],
 };
