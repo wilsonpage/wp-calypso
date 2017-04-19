@@ -16,9 +16,13 @@ import {
 } from 'state/action-types';
 import analytics from 'lib/analytics';
 import cartStore from 'lib/cart/store';
-import desktop from 'lib/desktop';
 import { getSelectedSite, getSelectedSiteId } from 'state/ui/selectors';
 import { getCurrentUser } from 'state/current-user/selectors';
+
+let desktop;
+if ( config.isEnabled( 'desktop' ) ) {
+	desktop = require( 'lib/desktop' );
+}
 
 /**
  * Sets the selectedSite and siteCount for lib/analytics. This is used to
