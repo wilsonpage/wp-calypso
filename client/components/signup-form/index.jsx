@@ -22,6 +22,7 @@ import FormButton from 'components/forms/form-button';
 import notices from 'notices';
 import Notice from 'components/notice';
 import LoggedOutForm from 'components/logged-out-form';
+import { login } from 'lib/paths';
 import formState from 'lib/form-state';
 import LoggedOutFormLinks from 'components/logged-out-form/links';
 import LoggedOutFormLinkItem from 'components/logged-out-form/link-item';
@@ -293,7 +294,7 @@ export default React.createClass( {
 			return;
 		}
 
-		let link = config( 'login_url' ) + '?redirect_to=' + this.props.getRedirectToAfterLoginUrl;
+		let link = login( { redirectTo: this.props.getRedirectToAfterLoginUrl } );
 		return map( messages, ( message, error_code ) => {
 			if ( error_code === 'taken' ) {
 				link += '&email_address=' + encodeURIComponent( formState.getFieldValue( this.state.form, fieldName ) );
@@ -443,16 +444,12 @@ export default React.createClass( {
 		return returnUrl + urlArray[ 1 ];
 	},
 
-	localizeUrlWithLastSlug( url ) {
-		return ( this.props.locale ) ? '/log-in/' + this.props.locale : url;
-	},
-
 	footerLink() {
 		if ( this.props.positionInFlow !== 0 ) {
 			return;
 		}
 
-		const logInUrl = this.localizeUrlWithSubdomain( config( 'login_url' ) );
+		const logInUrl = config.isEnabled( 'wp-login' ) ? login() : this.localizeUrlWithSubdomain( config( 'login_url' ) );
 
 		return (
 			<LoggedOutFormLinks>
